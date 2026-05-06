@@ -1,0 +1,235 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string", "format": "uri" },
+        "phoneNumber": { "type": "string" },
+        "address": { "type": "string" },
+        "pin": { "type": "string" },
+        "notificationSettings": {
+          "type": "object",
+          "properties": {
+            "system": { "type": "boolean" },
+            "news": { "type": "boolean" }
+          }
+        },
+        "pinnedGroupIds": { 
+          "type": "array", 
+          "items": { "type": "string" } 
+        },
+        "groupOrder": { 
+          "type": "array", 
+          "items": { "type": "string" } 
+        },
+        "lastReadChat": { 
+          "type": "object",
+          "description": "Mapping from groupId to last read timestamp"
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "createdAt"]
+    },
+    "Group": {
+      "title": "Group",
+      "description": "A community group",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "deputies": { "type": "array", "items": { "type": "string" } },
+        "members": { "type": "array", "items": { "type": "string" } },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "requireApproval": { "type": "boolean" },
+            "notifications": {
+              "type": "object",
+              "properties": {
+                "announcements": { "type": "boolean" },
+                "finance": { "type": "boolean" },
+                "tasks": { "type": "boolean" }
+              }
+            }
+          }
+        },
+        "totalFund": { "type": "number" },
+        "currency": { "type": "string" },
+        "pendingInvites": { "type": "array", "items": { "type": "string" } },
+        "pendingOwner": { "type": "string" },
+        "lastAnnoId": { "type": "string" },
+        "lastMessageAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "ownerId", "createdAt"]
+    },
+    "Announcement": {
+      "title": "Announcement",
+      "description": "Group announcement with reactions and comments",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "groupId": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "creatorPhone": { "type": "string" },
+        "reactions": { "type": "object" },
+        "comments": { "type": "array", "items": { "$ref": "Comment" } },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "groupId", "title", "content", "createdBy", "createdAt"]
+    },
+    "Comment": {
+      "title": "Comment",
+      "description": "Comment on content",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "content": { "type": "string" },
+        "uid": { "type": "string" },
+        "userName": { "type": "string" },
+        "reactions": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "content", "uid", "userName", "createdAt"]
+    },
+    "Campaign": {
+      "title": "Campaign",
+      "description": "Financial campaign within a group",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "groupId": { "type": "string" },
+        "name": { "type": "string" },
+        "balance": { "type": "number" },
+        "status": { "type": "string", "enum": ["active", "closed"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "groupId", "name", "status"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Income or expense record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "groupId": { "type": "string" },
+        "amount": { "type": "number" },
+        "type": { "type": "string", "enum": ["income", "expense"] },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "campaignId": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "groupId", "amount", "type", "status", "createdBy", "createdAt"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "User notification",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string", "enum": ["invite", "approval", "transfer", "announcement"] },
+        "data": { "type": "object" },
+        "isRead": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "type", "isRead", "createdAt"]
+    },
+    "InviteRequest": {
+      "title": "InviteRequest",
+      "description": "Request to join or invite to group",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "groupId": { "type": "string" },
+        "uid": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "createdAt": { "type": "string" }
+      }
+    },
+    "Task": {
+      "title": "Task",
+      "description": "A work task within a group",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "groupId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "assigneeId": { "type": "string" },
+        "assigneeName": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "doing", "done"] },
+        "dueDate": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "groupId", "title", "assigneeId", "status", "createdBy", "createdAt"]
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "Message in group chat",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "groupId": { "type": "string" },
+        "content": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "senderPhoto": { "type": "string", "format": "uri" },
+        "reactions": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "groupId", "content", "senderId", "senderName", "createdAt"]
+    },
+    "Poll": {
+      "title": "Poll",
+      "description": "Group poll/vote",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "groupId": { "type": "string" },
+        "question": { "type": "string" },
+        "creatorName": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "allowMultiple": { "type": "boolean" },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "text": { "type": "string" },
+              "voterIds": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "expiresAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "groupId", "question", "options", "createdBy", "createdAt"]
+    }
+  },
+  "firestore": {
+    "users/{uid}": { "schema": "User", "description": "Profiles" },
+    "groups/{groupId}": { "schema": "Group", "description": "Groups" },
+    "groups/{groupId}/announcements/{annoId}": { "schema": "Announcement", "description": "Announcements" },
+    "groups/{groupId}/campaigns/{campId}": { "schema": "Campaign", "description": "Campaigns" },
+    "groups/{groupId}/transactions/{txId}": { "schema": "Transaction", "description": "Transactions" },
+    "groups/{groupId}/requests/{reqId}": { "schema": "InviteRequest", "description": "Join or invite requests" },
+    "groups/{groupId}/tasks/{taskId}": { "schema": "Task", "description": "Group tasks" },
+    "groups/{groupId}/messages/{msgId}": { "schema": "ChatMessage", "description": "Group chat messages" },
+    "groups/{groupId}/polls/{pollId}": { "schema": "Poll", "description": "Group polls" },
+    "users/{uid}/notifications/{notifId}": { "schema": "Notification", "description": "User notifications" }
+  }
+}

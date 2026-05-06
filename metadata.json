@@ -1,0 +1,9 @@
+{
+  "name": "MyGroup",
+  "description": "Ứng dụng quản lý nhóm cộng đồng thông minh. Hỗ trợ theo dõi thu chi, quản lý thành viên và minh bạch tài chính.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": []
+}
