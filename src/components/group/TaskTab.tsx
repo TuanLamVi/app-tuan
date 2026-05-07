@@ -6,7 +6,7 @@ import { motion, AnimatePresence, LayoutGroup } from 'motion/react';
 import { 
   CheckCircle2, Clock, Play, AlertCircle, 
   Calendar, Plus, Filter, 
-  Search, MessageSquare, Flag, Sparkles, BrainCircuit, X, Bot, RefreshCw, Check, User
+  Search, MessageSquare, Flag, Sparkles, BrainCircuit, X, Bot, RefreshCw
 } from 'lucide-react';
 import { cn, formatDate } from '../../core/utils';
 import { handleFirestoreError, OperationType } from '../../hooks/useAuth';
@@ -14,7 +14,7 @@ import EmptyState from '../ui/EmptyState';
 import { toast } from 'react-hot-toast';
 import { NotificationService } from '../../services/notificationService';
 import TaskDetailModal from './TaskDetailModal';
-import { analyzeTasks, suggestTasks } from '../../services/geminiService';
+import { analyzeTasks } from '../../services/geminiService';
 import Markdown from 'react-markdown';
 
 interface TaskTabProps {
@@ -24,14 +24,6 @@ interface TaskTabProps {
   onAddTask: () => void;
   ownerId: string;
   members: UserProfile[];
-}
-
-interface SuggestedTask {
-  title: string;
-  description: string;
-  priority: 'low' | 'medium' | 'high';
-  assigneeId: string;
-  assigneeName: string;
 }
 
 const PRIORITY_CONFIG = {
@@ -62,19 +54,12 @@ export default function TaskTab({ groupId, groupName, canManage, onAddTask, owne
   const [isAIShowing, setIsAIShowing] = useState(false);
   const [aiAnalysis, setAIAnalysis] = useState<string | null>(null);
   const [isAIAnalyzing, setIsAIAnalyzing] = useState(false);
-  
-  // AI Auto-Assign States
-  const [aiMode, setAIMode] = useState<'analyze' | 'generate'>('analyze');
-  const [suggestionPrompt, setSuggestionPrompt] = useState('');
-  const [suggestedTasks, setSuggestedTasks] = useState<SuggestedTask[]>([]);
-  const [isCreatingTasks, setIsCreatingTasks] = useState(false);
 
   const handleAIAnalyze = async () => {
     if (tasks.length === 0) {
       toast.error('Chưa có công việc để phân tích');
       return;
     }
-    setAIMode('analyze');
     setIsAIAnalyzing(true);
     setIsAIShowing(true);
     try {
@@ -85,58 +70,6 @@ export default function TaskTab({ groupId, groupName, canManage, onAddTask, owne
       console.error(error);
     } finally {
       setIsAIAnalyzing(false);
-    }
-  };
-
-  const handleAISuggest = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!suggestionPrompt.trim()) return;
-    
-    setIsAIAnalyzing(true);
-    setSuggestedTasks([]);
-    try {
-      const results = await suggestTasks(suggestionPrompt, members);
-      setSuggestedTasks(results);
-    } catch (error) {
-      toast.error('AI không thể xử lý yêu cầu lúc này');
-    } finally {
-      setIsAIAnalyzing(false);
-    }
-  };
-
-  const handleBulkCreate = async () => {
-    if (suggestedTasks.length === 0) return;
-    
-    setIsCreatingTasks(true);
-    try {
-      const { addDoc, collection, serverTimestamp } = await import('firebase/firestore');
-      
-      for (const st of suggestedTasks) {
-        const newTask = {
-          title: st.title,
-          description: st.description,
-          status: 'todo',
-          priority: st.priority,
-          assigneeIds: [st.assigneeId],
-          assigneeNames: [st.assigneeName],
-          chatIds: [],
-          groupId,
-          createdBy: auth.currentUser?.uid,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        };
-        
-        await addDoc(collection(db, 'groups', groupId, 'tasks'), newTask);
-      }
-      
-      toast.success(`Đã tự động giao ${suggestedTasks.length} công việc!`);
-      setIsAIShowing(false);
-      setSuggestedTasks([]);
-      setSuggestionPrompt('');
-    } catch (error) {
-      handleFirestoreError(error, OperationType.CREATE, `groups/${groupId}/tasks`);
-    } finally {
-      setIsCreatingTasks(false);
     }
   };
 
@@ -335,24 +268,11 @@ export default function TaskTab({ groupId, groupName, canManage, onAddTask, owne
         <div className="flex flex-wrap items-center justify-center lg:justify-end gap-3 w-full lg:w-auto">
           {canManage && (
             <button 
-              onClick={() => {
-                setAIMode('generate');
-                setIsAIShowing(true);
-              }}
-              disabled={isAIAnalyzing}
-              className="px-6 py-4 bg-white dark:bg-slate-800 text-purple-600 dark:text-purple-400 rounded-[20px] text-[10px] font-black uppercase tracking-widest shadow-lg border border-purple-100 dark:border-purple-900/30 hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
-            >
-              <BrainCircuit size={18} /> Giao Việc AI
-            </button>
-          )}
-
-          {canManage && (
-            <button 
               onClick={handleAIAnalyze}
               disabled={isAIAnalyzing}
               className="px-6 py-4 bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 rounded-[20px] text-[10px] font-black uppercase tracking-widest shadow-lg border border-indigo-100 dark:border-indigo-900/30 hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
             >
-              {isAIAnalyzing && aiMode === 'analyze' ? (
+              {isAIAnalyzing ? (
                 <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
@@ -404,96 +324,26 @@ export default function TaskTab({ groupId, groupName, canManage, onAddTask, owne
                  <div className="w-16 h-16 bg-white/10 rounded-3xl flex items-center justify-center backdrop-blur-xl border border-white/20 shrink-0">
                     <Bot size={32} />
                  </div>
-               <div className="flex-1">
+                 <div className="flex-1">
                     <div className="flex items-center gap-3 mb-4">
-                      <h4 className="text-xl font-black italic uppercase tracking-tight">
-                        {aiMode === 'analyze' ? 'Trợ lý Phân tích Công việc' : 'AI Tự Động Giao Việc'}
-                      </h4>
+                      <h4 className="text-xl font-black italic uppercase tracking-tight">Trợ lý Phân tích Công việc</h4>
                       <div className="px-3 py-1 bg-white/10 rounded-full text-[10px] font-black tracking-widest uppercase backdrop-blur-md">Admin Only</div>
                     </div>
 
-                    {aiMode === 'analyze' ? (
-                      isAIAnalyzing ? (
-                        <div className="space-y-4 py-8">
-                          <div className="h-4 bg-white/10 rounded-full w-3/4 animate-pulse" />
-                          <div className="h-4 bg-white/10 rounded-full w-full animate-pulse" />
-                          <div className="h-4 bg-white/10 rounded-full w-2/3 animate-pulse" />
-                        </div>
-                      ) : aiAnalysis ? (
-                        <div className="prose prose-invert max-w-none prose-p:leading-relaxed prose-li:my-1">
-                          <div className="markdown-body">
-                            <Markdown>{aiAnalysis}</Markdown>
-                          </div>
-                        </div>
-                      ) : (
-                        <p className="text-white/60 font-medium py-4">Nhấn "Làm mới" để bắt đầu phân tích...</p>
-                      )
-                    ) : (
-                      <div className="space-y-6">
-                        <form onSubmit={handleAISuggest} className="relative">
-                          <input 
-                            type="text"
-                            value={suggestionPrompt}
-                            onChange={e => setSuggestionPrompt(e.target.value)}
-                            placeholder="Ví dụ: Chia việc chuẩn bị tiệc Tất niên cho 5 người..."
-                            className="w-full bg-white/10 border border-white/20 rounded-2xl py-4 pl-6 pr-14 text-sm font-bold text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/20 outline-none backdrop-blur-xl"
-                          />
-                          <button 
-                            type="submit"
-                            disabled={isAIAnalyzing || !suggestionPrompt.trim()}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 bg-white text-indigo-600 rounded-xl shadow-lg active:scale-95 transition-all disabled:opacity-50"
-                          >
-                            {isAIAnalyzing ? (
-                              <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-                            ) : (
-                              <BrainCircuit size={18} />
-                            )}
-                          </button>
-                        </form>
-
-                        {suggestedTasks.length > 0 && (
-                          <motion.div 
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="space-y-4"
-                          >
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              {suggestedTasks.map((st, idx) => (
-                                <div key={idx} className="bg-white/10 border border-white/10 rounded-2xl p-4 backdrop-blur-md">
-                                  <div className="flex items-center justify-between mb-2">
-                                    <span className={cn(
-                                      "px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider",
-                                      st.priority === 'high' ? 'bg-rose-500 text-white' : 
-                                      st.priority === 'medium' ? 'bg-amber-500 text-white' : 'bg-emerald-500 text-white'
-                                    )}>
-                                      {st.priority}
-                                    </span>
-                                    <div className="flex items-center gap-1 text-[10px] font-bold text-indigo-200">
-                                      <User size={12} className="text-white" />
-                                      {st.assigneeName}
-                                    </div>
-                                  </div>
-                                  <h5 className="text-sm font-black text-white mb-1">{st.title}</h5>
-                                  <p className="text-[10px] text-white/60 line-clamp-2">{st.description}</p>
-                                </div>
-                              ))}
-                            </div>
-                            <button 
-                              onClick={handleBulkCreate}
-                              disabled={isCreatingTasks}
-                              className="w-full py-4 bg-white text-indigo-600 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] shadow-xl hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
-                            >
-                              {isCreatingTasks ? (
-                                <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-                              ) : (
-                                <>
-                                  <Check size={18} /> Lưu & Giao Tất Cả Công Việc
-                                </>
-                              )}
-                            </button>
-                          </motion.div>
-                        )}
+                    {isAIAnalyzing ? (
+                      <div className="space-y-4 py-8">
+                        <div className="h-4 bg-white/10 rounded-full w-3/4 animate-pulse" />
+                        <div className="h-4 bg-white/10 rounded-full w-full animate-pulse" />
+                        <div className="h-4 bg-white/10 rounded-full w-2/3 animate-pulse" />
                       </div>
+                    ) : aiAnalysis ? (
+                      <div className="prose prose-invert max-w-none prose-p:leading-relaxed prose-li:my-1">
+                        <div className="markdown-body">
+                          <Markdown>{aiAnalysis}</Markdown>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-white/60 font-medium py-4">Nhấn "Làm mới" để bắt đầu phân tích...</p>
                     )}
                  </div>
                </div>
@@ -623,7 +473,7 @@ function TaskCard({ task, members, ownerId, isDragging, onDragStart, onClick }: 
       whileHover={{ y: -10, rotate: 2 }}
       whileTap={{ scale: 0.95, rotate: -2, zIndex: 50 }}
       draggable={canDrag}
-      onDragStart={onDragStart as any}
+      onDragStart={onDragStart}
       onClick={onClick}
       className={cn(
         "group relative flex flex-col p-8 bg-white dark:bg-slate-900 rounded-[36px] border-2 transition-all cursor-pointer shadow-sm select-none h-full min-h-[220px] text-left",
