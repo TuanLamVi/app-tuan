@@ -39,6 +39,7 @@ export default function GroupDetail() {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('news');
+  const [direction, setDirection] = useState(0);
   const [group, setGroup] = useState<Group | null>(null);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -366,6 +367,46 @@ export default function GroupDetail() {
 
   const isPendingOwner = group?.pendingOwner === auth.currentUser?.uid;
 
+  const availableTabs: TabType[] = ['news', 'chat', 'members', 'tasks', 'finance', 'polls'].filter(t => {
+    if (t === 'news' || t === 'members') return true;
+    return isMember;
+  }) as TabType[];
+
+  const handleTabChange = (newTab: TabType) => {
+    const currentIndex = availableTabs.indexOf(activeTab);
+    const newIndex = availableTabs.indexOf(newTab);
+    setDirection(newIndex > currentIndex ? 1 : -1);
+    setActiveTab(newTab);
+  };
+
+  const onDragEnd = (_e: any, info: any) => {
+    const threshold = 50;
+    const currentIndex = availableTabs.indexOf(activeTab);
+    
+    if (info.offset.x < -threshold && currentIndex < availableTabs.length - 1) {
+      handleTabChange(availableTabs[currentIndex + 1]);
+    } else if (info.offset.x > threshold && currentIndex > 0) {
+      handleTabChange(availableTabs[currentIndex - 1]);
+    }
+  };
+
+  const tabVariants = {
+    enter: (dir: number) => ({
+      x: dir > 0 ? 100 : -100,
+      opacity: 0,
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1,
+    },
+    exit: (dir: number) => ({
+      zIndex: 0,
+      x: dir < 0 ? 100 : -100,
+      opacity: 0,
+    }),
+  };
+
   const handleExportCSV = () => {
     if (transactions.length === 0) {
       toast.error('Chưa có giao dịch để xuất');
@@ -583,22 +624,22 @@ export default function GroupDetail() {
         {/* Tab Selection */}
         <div className="flex overflow-x-auto no-scrollbar scroll-smooth snap-x">
           <div className="flex p-1 gap-1 min-w-full">
-            <TabNavItem active={activeTab === 'news'} onClick={() => setActiveTab('news')} icon={<MessageSquare size={16} />} label="Bản tin" />
+            <TabNavItem active={activeTab === 'news'} onClick={() => handleTabChange('news')} icon={<MessageSquare size={16} />} label="Bản tin" />
             {isMember && (
                <TabNavItem 
                  active={activeTab === 'chat'} 
-                 onClick={() => setActiveTab('chat')} 
+                 onClick={() => handleTabChange('chat')} 
                  icon={<MessageCircle size={16} />} 
                  label="Nhắn tin" 
                  badgeCount={id && profile ? <ChatTabBadge groupId={id} lastReadAt={profile?.lastReadChat?.[id]} /> : 0}
                />
             )}
-            <TabNavItem active={activeTab === 'members'} onClick={() => setActiveTab('members')} icon={<Users size={16} />} label="Mọi người" />
+            <TabNavItem active={activeTab === 'members'} onClick={() => handleTabChange('members')} icon={<Users size={16} />} label="Mọi người" />
             {isMember && (
               <>
-                <TabNavItem active={activeTab === 'tasks'} onClick={() => setActiveTab('tasks')} icon={<CheckCircle2 size={16} />} label="Việc làm" />
-                <TabNavItem active={activeTab === 'finance'} onClick={() => setActiveTab('finance')} icon={<Wallet size={16} />} label="Quỹ nhóm" />
-                <TabNavItem active={activeTab === 'polls'} onClick={() => setActiveTab('polls')} icon={<BarChart3 size={16} />} label="Bình chọn" />
+                <TabNavItem active={activeTab === 'tasks'} onClick={() => handleTabChange('tasks')} icon={<CheckCircle2 size={16} />} label="Việc làm" />
+                <TabNavItem active={activeTab === 'finance'} onClick={() => handleTabChange('finance')} icon={<Wallet size={16} />} label="Quỹ nhóm" />
+                <TabNavItem active={activeTab === 'polls'} onClick={() => handleTabChange('polls')} icon={<BarChart3 size={16} />} label="Bình chọn" />
               </>
             )}
           </div>
@@ -621,7 +662,13 @@ export default function GroupDetail() {
           ))}
         </div>
 
-      <div className="p-4">
+      <motion.div 
+        className="p-4"
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.2}
+        onDragEnd={onDragEnd}
+      >
         {!isMember && activeTab !== 'news' && activeTab !== 'members' && (
           <div className="py-20 text-center space-y-4">
             <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto text-blue-600">
@@ -640,9 +687,21 @@ export default function GroupDetail() {
           </div>
         )}
 
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" custom={direction}>
           {activeTab === 'news' && (
-            <motion.div key="news" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4">
+            <motion.div 
+              key="news" 
+              custom={direction}
+              variants={tabVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { type: "spring", stiffness: 300, damping: 30 },
+                opacity: { duration: 0.2 }
+              }}
+              className="space-y-4"
+            >
               {canManage && (
                 <button 
                   onClick={() => setIsAnnoModalOpen(true)}
@@ -685,13 +744,35 @@ export default function GroupDetail() {
           )}
 
           {isMember && activeTab === 'chat' && (
-            <motion.div key="chat" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            <motion.div 
+              key="chat" 
+              custom={direction}
+              variants={tabVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { type: "spring", stiffness: 300, damping: 30 },
+                opacity: { duration: 0.2 }
+              }}
+            >
               <ChatTab groupId={id!} canManage={canManage} />
             </motion.div>
           )}
 
           {isMember && activeTab === 'tasks' && (
-            <motion.div key="tasks" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            <motion.div 
+              key="tasks" 
+              custom={direction}
+              variants={tabVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { type: "spring", stiffness: 300, damping: 30 },
+                opacity: { duration: 0.2 }
+              }}
+            >
               <TaskTab 
                 groupId={id!}
                 groupName={group.name}
@@ -704,7 +785,18 @@ export default function GroupDetail() {
           )}
 
           {isMember && activeTab === 'polls' && (
-            <motion.div key="polls" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            <motion.div 
+              key="polls" 
+              custom={direction}
+              variants={tabVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { type: "spring", stiffness: 300, damping: 30 },
+                opacity: { duration: 0.2 }
+              }}
+            >
               <PollTab 
                 groupId={id!}
                 canManage={canManage}
@@ -716,7 +808,19 @@ export default function GroupDetail() {
           )}
 
           {isMember && activeTab === 'finance' && (
-            <motion.div key="finance" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+            <motion.div 
+              key="finance" 
+              custom={direction}
+              variants={tabVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { type: "spring", stiffness: 300, damping: 30 },
+                opacity: { duration: 0.2 }
+              }}
+              className="space-y-6"
+            >
               <div className="bg-gray-900 rounded-3xl p-6 text-white shadow-xl shadow-gray-200">
                 <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">Số dư hiện tại</p>
                 <div className="flex items-baseline gap-2">
@@ -853,7 +957,19 @@ export default function GroupDetail() {
           )}
 
           {activeTab === 'members' && (
-            <motion.div key="members" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4">
+            <motion.div 
+              key="members" 
+              custom={direction}
+              variants={tabVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { type: "spring", stiffness: 300, damping: 30 },
+                opacity: { duration: 0.2 }
+              }}
+              className="space-y-4"
+            >
               {canManage && requests.length > 0 && (
                 <div className="bg-blue-600 rounded-[32px] p-6 text-white shadow-xl shadow-blue-100 mb-6">
                   <div className="flex items-center gap-2 mb-4">
@@ -921,7 +1037,7 @@ export default function GroupDetail() {
               <div className="bg-white dark:bg-gray-800 rounded-[32px] border border-gray-100 dark:border-gray-700 overflow-hidden shadow-sm transition-colors">
                 <div className="bg-gray-50/50 dark:bg-gray-700/50 px-5 py-3 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-widest">
                    <span>Danh sách ({filteredMembers.length})</span>
-                </div>
+                 </div>
                 {paginatedMembers.length === 0 ? (
                   <div className="py-10 text-center flex flex-col items-center gap-2">
                     <Info className="text-gray-200 dark:text-gray-700" size={32} />
@@ -1009,7 +1125,7 @@ export default function GroupDetail() {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </motion.div>
 
       {/* Action Fab for Finance */}
       {activeTab === 'finance' && (

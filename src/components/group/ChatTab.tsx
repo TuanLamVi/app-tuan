@@ -288,8 +288,24 @@ export default function ChatTab({ groupId, canManage }: ChatTabProps) {
           <AnimatePresence initial={false}>
             {messages.map((message, index) => {
               const isOwn = message.senderId === auth.currentUser?.uid;
+              const prevMessage = messages[index - 1];
               const nextMessage = messages[index + 1];
-              const isLastInGroup = !nextMessage || nextMessage.senderId !== message.senderId;
+              
+              // A message is first in a group if:
+              // 1. It's the first message ever
+              // 2. Different sender from previous
+              // 3. Same sender but > 1 minute gap
+              const isFirstInGroup = !prevMessage || 
+                                    prevMessage.senderId !== message.senderId || 
+                                    (message.createdAt.getTime() - prevMessage.createdAt.getTime() > 60000);
+
+              // A message is last in a group if:
+              // 1. It's the last message ever
+              // 2. Different sender for next
+              // 3. Same sender but > 1 minute gap
+              const isLastInGroup = !nextMessage || 
+                                   nextMessage.senderId !== message.senderId || 
+                                   (nextMessage.createdAt.getTime() - message.createdAt.getTime() > 60000);
 
               return (
                 <motion.div 
@@ -298,11 +314,12 @@ export default function ChatTab({ groupId, canManage }: ChatTabProps) {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   className={cn(
                     "flex gap-3 max-w-[90%]",
-                    isOwn ? "flex-row-reverse self-end" : "flex-row self-start"
+                    isOwn ? "flex-row-reverse self-end" : "flex-row self-start",
+                    !isFirstInGroup ? "-mt-2" : "mt-2"
                   )}
                 >
                   {/* Avatar */}
-                  {!isOwn && (isLastInGroup || messages[index-1]?.senderId !== message.senderId) ? (
+                  {!isOwn && isFirstInGroup ? (
                     <div className="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 overflow-hidden flex-shrink-0 mt-1">
                       {message.senderPhoto ? (
                         <img src={message.senderPhoto} alt="" className="w-full h-full object-cover" />
@@ -329,7 +346,7 @@ export default function ChatTab({ groupId, canManage }: ChatTabProps) {
                     onTouchMove={handleMove}
                     onTouchEnd={stopLongPress}
                   >
-                    {!isOwn && (isLastInGroup || messages[index-1]?.senderId !== message.senderId) && (
+                    {!isOwn && isFirstInGroup && (
                       <span className="text-[10px] font-black uppercase text-gray-500 mb-1 ml-1 tracking-tight">
                         {message.senderName}
                       </span>
@@ -338,8 +355,8 @@ export default function ChatTab({ groupId, canManage }: ChatTabProps) {
                     <div className={cn(
                       "relative group px-4 py-2.5 rounded-2xl text-sm font-medium transition-all shadow-sm",
                       isOwn 
-                        ? "bg-blue-600 text-white rounded-tr-none" 
-                        : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-tl-none border border-gray-100 dark:border-gray-700",
+                        ? cn("bg-blue-600 text-white", isFirstInGroup ? "rounded-tr-none" : "rounded-tr-2xl") 
+                        : cn("bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-100 dark:border-gray-700", isFirstInGroup ? "rounded-tl-none" : "rounded-tl-2xl"),
                       activeActionId === message.id && "scale-[1.02] ring-2 ring-blue-500/20 shadow-lg z-10"
                     )}>
                       <p className="whitespace-pre-wrap break-words leading-relaxed">{message.content}</p>
@@ -469,7 +486,7 @@ export default function ChatTab({ groupId, canManage }: ChatTabProps) {
                       </AnimatePresence>
                     </div>
 
-                    {(isLastInGroup || messages[index+1]?.senderId !== message.senderId) && (
+                    {isLastInGroup && (
                       <span className={cn(
                         "text-[8px] font-bold text-gray-400 mt-1 flex items-center gap-1",
                         isOwn ? "mr-1" : "ml-1"

@@ -48,7 +48,7 @@ const GroupUnreadBadge = ({ groupId, lastReadAt }: { groupId: string, lastReadAt
   if (unreadCount === 0) return null;
 
   return (
-    <div className="bg-red-500 text-white text-[10px] font-black min-w-[20px] h-5 px-1.5 rounded-full flex items-center justify-center shadow-lg shadow-red-200 animate-in zoom-in ring-2 ring-white dark:ring-gray-900 z-20">
+    <div className="bg-red-500 text-white text-[10px] font-black min-w-[22px] h-[22px] px-1.5 rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(239,68,68,0.3)] animate-in zoom-in duration-300 shrink-0">
       {unreadCount >= 20 ? '9+' : unreadCount}
     </div>
   );
@@ -408,14 +408,12 @@ export default function Home() {
                             <Crown size={16} className="text-gray-900 fill-gray-900" />
                           </div>
                         )}
-                        <div className="absolute -bottom-2 -right-2 bg-white dark:bg-gray-900 rounded-2xl p-1 shadow-lg ring-1 ring-gray-900 dark:ring-white">
-                           <GroupUnreadBadge groupId={group.id} lastReadAt={profile?.lastReadChat?.[group.id]} />
-                        </div>
                       </div>
                       
                       <div className="flex-1 min-w-0 text-left">
                         <div className="flex items-center gap-3 mb-4">
                            <h4 className="font-black text-gray-900 dark:text-white text-2xl truncate tracking-tight font-display uppercase italic leading-none">{group.name}</h4>
+                           <GroupUnreadBadge groupId={group.id} lastReadAt={profile?.lastReadChat?.[group.id]} />
                            {group.lastAnnoId && (
                              <div className="w-3 h-3 bg-rose-500 rounded-full animate-ping" />
                            )}
