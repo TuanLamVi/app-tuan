@@ -551,11 +551,11 @@ export default function GroupDetail() {
             </button>
             <div className="min-w-0">
                <div className="flex items-center gap-2">
-                 <h1 className="font-black text-xl italic uppercase tracking-tighter truncate dark:text-white">{group.name}</h1>
+                 <h1 className="font-black text-xl italic uppercase tracking-tighter truncate dark:text-white" style={{ color: '#f7a24d', width: '301.25px' }}>{group.name}</h1>
                  {isOwner ? (
-                   <div className="flex-shrink-0 flex items-center gap-1 bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded-full border border-amber-100 dark:border-amber-800 shadow-sm">
-                     <Crown size={10} className="text-amber-500 fill-amber-500" />
-                     <span className="text-[8px] font-black uppercase text-amber-600 tracking-widest">Quản trị</span>
+                   <div className="flex-shrink-0 flex items-center bg-amber-50 dark:bg-amber-900/30 px-1.5 py-1 rounded-full border border-amber-100 dark:border-amber-800 shadow-sm">
+                     <Crown size={7} className="text-amber-500 fill-amber-500" />
+
                    </div>
                  ) : isDeputy ? (
                    <span className="flex-shrink-0 text-[8px] font-black uppercase text-blue-600 tracking-widest bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-800">Phó nhóm</span>

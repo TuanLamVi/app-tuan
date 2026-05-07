@@ -131,8 +131,8 @@ export default function MemberDetailsModal({ member, group, onClose, canManage, 
           <h3 className="text-xl font-black text-gray-900 dark:text-white mb-1">{member.displayName}</h3>
           <div className="flex items-center justify-center gap-1.5">
             {isMemberOwner ? (
-               <span className="bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-[9px] font-black uppercase px-2 py-0.5 rounded-lg tracking-wider flex items-center gap-1">
-                 <Crown size={10} /> Trưởng nhóm
+               <span className="bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-[9px] font-black uppercase px-1.5 py-1 rounded-lg tracking-wider flex items-center">
+                 <Crown size={10} />
                </span>
             ) : isMemberDeputy ? (
                <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[9px] font-black uppercase px-2 py-0.5 rounded-lg tracking-wider flex items-center gap-1">

@@ -392,7 +392,6 @@ export default function Home() {
                          {group.lastAnnoId && (
                            <div className="w-2 h-2 bg-red-500 rounded-full animate-ping" />
                          )}
-                         {isPinned && <Pin size={10} className="text-blue-500 fill-blue-500" />}
                          {group.ownerId === auth.currentUser?.uid && (
                            <div className="flex items-center justify-center bg-amber-50 dark:bg-amber-900/20 w-5 h-5 rounded-full border border-amber-100 dark:border-amber-800 shadow-sm">
                              <Crown size={10} className="text-amber-500 fill-amber-500" />

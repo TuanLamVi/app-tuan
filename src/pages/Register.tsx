@@ -15,8 +15,17 @@ export default function Register() {
     pin: '',
   });
   const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
+  const { register, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
+
+  const handleGoogleRegister = async () => {
+    try {
+      await signInWithGoogle();
+      navigate('/');
+    } catch (error) {
+      // Error handled in useAuth
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -128,6 +137,21 @@ export default function Register() {
             className="w-full bg-blue-600 text-white rounded-2xl py-4 font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all active:scale-[0.98] disabled:opacity-50"
           >
             {loading ? 'Đang xử lý...' : 'Đăng ký ngay'}
+          </button>
+
+          <div className="flex items-center gap-4 my-2">
+            <div className="flex-1 h-[1px] bg-gray-100" />
+            <span className="text-[10px] uppercase font-bold text-gray-300 tracking-widest">Hoặc</span>
+            <div className="flex-1 h-[1px] bg-gray-100" />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleGoogleRegister}
+            className="w-full flex items-center justify-center gap-3 px-6 py-4 border-2 border-gray-100 text-gray-700 rounded-2xl font-bold hover:bg-gray-50 transition-all active:scale-[0.98]"
+          >
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+            <span>Đăng ký nhanh bằng Google</span>
           </button>
           
           <p className="text-center text-sm text-gray-500">

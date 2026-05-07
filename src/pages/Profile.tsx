@@ -14,6 +14,7 @@ import { updateProfile, updatePassword } from 'firebase/auth';
 import { doc, updateDoc, collection, query, where, onSnapshot, orderBy, limit } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { toast } from 'react-hot-toast';
+import { PushNotificationService } from '../services/pushNotificationService';
 
 export default function Profile() {
   const { profile, logout } = useAuth();
@@ -536,13 +537,25 @@ export default function Profile() {
             />
             
             <NotificationToggle 
-              label="Bản tin cộng đồng"
+              label="Thông báo cộng đồng"
               description="Các thông báo mới từ các nhóm bạn đang tham gia."
               enabled={notifSettings.news}
               onChange={(val) => {
                 const newS = { ...notifSettings, news: val };
                 setNotifSettings(newS);
                 handleUpdateNotificationSettings(newS);
+              }}
+            />
+            
+            <NotificationToggle 
+              label="Thông báo đẩy (Push)"
+              description="Nhận thông báo ngay cả khi không mở ứng dụng (Yêu cầu quyền trình duyệt)."
+              enabled={Notification.permission === 'granted'}
+              onChange={async () => {
+                const res = await PushNotificationService.requestPermission(auth.currentUser?.uid || '');
+                if (res) {
+                  toast.success('Đã kích hoạt thông báo đẩy!');
+                }
               }}
             />
           </div>

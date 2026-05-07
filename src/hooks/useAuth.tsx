@@ -14,6 +14,7 @@ import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase
 import { UserProfile } from '../models';
 import { normalizePhoneNumber } from '../core/utils';
 import { toast } from 'react-hot-toast';
+import { PushNotificationService } from '../services/pushNotificationService';
 
 interface AuthContextType {
   user: User | null;
@@ -41,6 +42,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (userDoc.exists()) {
           setProfile(userDoc.data() as UserProfile);
         }
+        
+        // Initialize Push Notifications
+        try {
+          PushNotificationService.requestPermission(user.uid);
+          PushNotificationService.listenForMessages();
+        } catch (pushError) {
+          console.error("Push Notification Setup error:", pushError);
+        }
       } else {
         setProfile(null);
       }
@@ -51,22 +60,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-    
-    // Check/Create profile for Google users
-    const userDoc = await getDoc(doc(db, 'users', user.uid));
-    if (!userDoc.exists()) {
-      const newProfile: UserProfile = {
-        uid: user.uid,
-        email: user.email || '',
-        displayName: user.displayName || 'Thành viên',
-        photoURL: user.photoURL || undefined,
-        createdAt: new Date(),
-      };
-      await setDoc(doc(db, 'users', user.uid), newProfile);
-      setProfile(newProfile);
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      // Check/Create profile for Google users
+      try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (!userDoc.exists()) {
+          const newProfile: UserProfile = {
+            uid: user.uid,
+            email: user.email || '',
+            displayName: user.displayName || 'Thành viên',
+            photoURL: user.photoURL || undefined,
+            phoneNumber: user.phoneNumber || '',
+            pin: '0000', // Default PIN for social login
+            createdAt: new Date(),
+          };
+          await setDoc(doc(db, 'users', user.uid), newProfile);
+          setProfile(newProfile);
+          toast.success('Đăng ký tài khoản Google thành công!');
+        } else {
+          setProfile(userDoc.data() as UserProfile);
+          toast.success('Đăng nhập Google thành công!');
+        }
+      } catch (dbError) {
+        handleFirestoreError(dbError, OperationType.WRITE, `users/${user.uid}`);
+      }
+    } catch (error: any) {
+      console.error("Google Sign-In Error:", error);
+      if (error.code === 'auth/popup-blocked') {
+        toast.error('Trình duyệt đã chặn cửa sổ đăng nhập. Vui lòng bật popup và thử lại.');
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        // User closed the popup, no need for error toast usually
+      } else {
+        toast.error('Lỗi đăng nhập Google: ' + (error.message || 'Vui lòng thử lại sau.'));
+      }
     }
   };
 

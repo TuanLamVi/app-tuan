@@ -3,13 +3,23 @@ import {
   serverTimestamp, query, orderBy, limit, onSnapshot,
   getDocs, where, getDoc
 } from 'firebase/firestore';
-import { db } from '../lib/firebase';
-import { Notification } from '../models';
+import { db, auth } from '../lib/firebase';
+import { Notification as AppNotification } from '../models';
 import { handleFirestoreError, OperationType } from '../hooks/useAuth';
 
 export class NotificationService {
-  static async sendNotification(targetUid: string, data: Partial<Notification>) {
+  static async sendNotification(targetUid: string, data: Partial<AppNotification>) {
     try {
+      // Local browser notification if it's the current user (for immediate feedback/demo)
+      // or if we were on a system that could push to other users.
+      // In this client-only context, we mainly only see our own "pushes" if we trigger them.
+      if (targetUid === auth.currentUser?.uid && typeof window !== 'undefined' && 'Notification' in window && window.Notification.permission === 'granted') {
+        new window.Notification(data.title || 'Thông báo', {
+          body: data.message,
+          icon: 'https://www.gstatic.com/images/branding/product/1x/notifications_v2_48dp.png'
+        });
+      }
+
       // Check group settings if groupId and category are provided
       const groupId = data.data?.groupId;
       const category = data.category;
@@ -40,7 +50,7 @@ export class NotificationService {
     }
   }
 
-  static subscribe(uid: string, callback: (notifications: Notification[]) => void) {
+  static subscribe(uid: string, callback: (notifications: AppNotification[]) => void) {
     const q = query(
       collection(db, 'users', uid, 'notifications'),
       orderBy('createdAt', 'desc'),
@@ -52,7 +62,7 @@ export class NotificationService {
         ...doc.data(),
         id: doc.id,
         createdAt: doc.data().createdAt?.toDate() || new Date()
-      } as Notification));
+      } as AppNotification));
       callback(items);
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, `users/${uid}/notifications`);
