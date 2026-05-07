@@ -389,9 +389,9 @@ export default function ChatTab({ groupId, canManage }: ChatTabProps) {
 
                         {/* Other active reactions */}
                         {message.reactions && Object.entries(message.reactions).map(([emoji, uids]) => {
-                          const count = (uids as string[]).length;
+                          const count = (uids as string[] || []).length;
                           if (emoji === '❤️' || count === 0) return null;
-                          const hasReacted = (uids as string[]).includes(auth.currentUser?.uid || '');
+                          const hasReacted = (uids as string[] || []).includes(auth.currentUser?.uid || '');
                           
                           return (
                             <button

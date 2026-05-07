@@ -158,8 +158,8 @@ export default function AnnouncementCard({
     onDelete?.(announcement.id);
   };
 
-  const userReaction = currentUser ? Object.entries(announcement.reactions || {}).find(([_, uids]) => (uids as string[]).includes(currentUser.uid))?.[0] : null;
-  const totalReactions = Object.values(announcement.reactions || {}).reduce((acc, curr) => acc + (curr as string[]).length, 0);
+  const userReaction = currentUser ? Object.entries(announcement.reactions || {}).find(([_, uids]) => (uids as string[] || []).includes(currentUser.uid))?.[0] : null;
+  const totalReactions = Object.values(announcement.reactions || {}).reduce((acc, curr) => acc + (curr as string[] || []).length, 0);
 
     const isNew = announcement.createdAt && (new Date().getTime() - announcement.createdAt.getTime() < 24 * 60 * 60 * 1000);
 
@@ -296,8 +296,8 @@ export default function AnnouncementCard({
             <div className="bg-gray-50/50 dark:bg-gray-800/30 p-5">
               <div className="space-y-4 mb-4">
                 {announcement.comments?.map(comment => {
-              const commentUserReaction = currentUser ? Object.entries(comment.reactions || {}).find(([_, uids]) => (uids as string[]).includes(currentUser.uid))?.[0] : null;
-              const commentTotalReactions = Object.values(comment.reactions || {}).reduce((acc, curr) => acc + (curr as string[]).length, 0);
+              const commentUserReaction = currentUser ? Object.entries(comment.reactions || {}).find(([_, uids]) => (uids as string[] || []).includes(currentUser.uid))?.[0] : null;
+              const commentTotalReactions = Object.values(comment.reactions || {}).reduce((acc, curr) => acc + (curr as string[] || []).length, 0);
 
               return (
                 <div key={comment.id} className="flex gap-3">

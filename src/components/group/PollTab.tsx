@@ -60,8 +60,8 @@ export default function PollTab({ groupId, canManage, isMember, memberProfiles, 
       const poll = polls.find(p => p.id === pollId);
       if (!poll) return;
 
-      const newOptions = poll.options.map(opt => {
-        const isVoted = opt.voterIds.includes(userId);
+      const newOptions = (poll.options || []).map(opt => {
+        const isVoted = (opt.voterIds || []).includes(userId);
         const isTarget = opt.id === optionId;
 
         // If user already voted for this option, remove it (toggle)
@@ -136,9 +136,10 @@ export default function PollTab({ groupId, canManage, isMember, memberProfiles, 
       ) : (
         <div className="space-y-6">
           {polls.map((poll) => {
-            const totalVotes = poll.options.reduce((acc, opt) => acc + opt.voterIds.length, 0);
-            const userVotedOptionIds = poll.options
-              .filter(opt => opt.voterIds.includes(auth.currentUser?.uid || ''))
+            const pollOptions = poll.options || [];
+            const totalVotes = pollOptions.reduce((acc, opt) => acc + (opt.voterIds || []).length, 0);
+            const userVotedOptionIds = pollOptions
+              .filter(opt => (opt.voterIds || []).includes(auth.currentUser?.uid || ''))
               .map(opt => opt.id);
 
             return (
@@ -173,9 +174,9 @@ export default function PollTab({ groupId, canManage, isMember, memberProfiles, 
                 </div>
 
                 <div className="space-y-3">
-                  {poll.options.map((option) => {
+                  {pollOptions.map((option) => {
                     const isVoted = userVotedOptionIds.includes(option.id);
-                    const percentage = totalVotes > 0 ? Math.round((option.voterIds.length / totalVotes) * 100) : 0;
+                    const percentage = totalVotes > 0 ? Math.round(((option.voterIds || []).length / totalVotes) * 100) : 0;
                     const isVoting = votingId === `${poll.id}-${option.id}`;
 
                     return (
@@ -214,7 +215,7 @@ export default function PollTab({ groupId, canManage, isMember, memberProfiles, 
                                "text-[10px] font-black uppercase tracking-widest",
                                isVoted ? "text-white/80" : "text-gray-400"
                              )}>
-                               {option.voterIds.length} phiếu
+                               {(option.voterIds || []).length} phiếu
                              </span>
                              <span className={cn(
                                "text-xs font-black",
@@ -226,7 +227,7 @@ export default function PollTab({ groupId, canManage, isMember, memberProfiles, 
                         </div>
 
                         {/* Voter Avatars */}
-                        {option.voterIds.length > 0 && (
+                        {(option.voterIds || []).length > 0 && (
                           <div className="mt-2 flex items-center gap-1 relative z-10">
                             <div className="flex -space-x-2 overflow-hidden">
                               {option.voterIds.slice(0, 5).map(uid => {
@@ -270,11 +271,11 @@ export default function PollTab({ groupId, canManage, isMember, memberProfiles, 
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-gray-50 dark:border-gray-800 flex justify-between items-center">
-                   <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic">
+                   <p className="text-xs text-gray-400 font-bold uppercase tracking-widest italic">
                      Bởi {poll.creatorName} {poll.createdBy === auth.currentUser?.uid && '(Bạn)'}
                    </p>
                    {poll.allowMultiple && (
-                     <span className="text-[8px] font-black uppercase tracking-widest text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">
+                     <span className="text-[0.625rem] font-black uppercase tracking-widest text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">
                        Cho phép chọn nhiều
                      </span>
                    )}

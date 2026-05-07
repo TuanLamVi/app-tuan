@@ -149,7 +149,7 @@ service cloud.firestore {
         allow create: if isDeputyOrOwner(groupId);
         allow update: if isDeputyOrOwner(groupId) || (
           isSignedIn() && 
-          resource.data.assigneeId == request.auth.uid &&
+          request.auth.uid in resource.data.get('assigneeIds', []) &&
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
         );
         allow delete: if isDeputyOrOwner(groupId);

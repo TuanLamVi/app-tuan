@@ -587,8 +587,8 @@ export default function GroupDetail() {
         )}
       </AnimatePresence>
 
-      {/* Fixed Sticky Header */}
-      <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl px-6 pt-10 pb-4 rounded-b-[40px] shadow-sm sticky top-0 z-30 border-b border-gray-100 dark:border-gray-800 transition-all">
+      {/* Sticky Header */}
+      <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl px-4 md:px-6 pt-6 md:pt-10 pb-4 rounded-b-[32px] md:rounded-b-[40px] shadow-sm sticky top-0 z-30 border-b border-gray-100 dark:border-gray-800 transition-all">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <button onClick={() => navigate('/')} className="w-10 h-10 flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-gray-800 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all active:scale-95">
@@ -667,11 +667,10 @@ export default function GroupDetail() {
         </div>
 
       <motion.div 
-        className="flex-1 w-full relative overflow-hidden"
+        className="flex-1 w-full relative overflow-hidden touch-pan-y"
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.7}
-        dragDirectionLock
+        dragElastic={0.5}
         onDragEnd={onDragEnd}
       >
         <div className="p-4 min-h-full">

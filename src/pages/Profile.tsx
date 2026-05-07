@@ -233,51 +233,51 @@ export default function Profile() {
   );
 
   return (
-    <div className="p-4 pb-24 space-y-6 max-w-md mx-auto">
-      <header className="py-12 flex flex-col items-center relative">
+    <div className="p-4 md:p-8 pb-32 space-y-8 max-w-md mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <header className="pt-6 pb-10 flex flex-col items-center relative">
         <div className="relative group">
-          <div className="w-32 h-32 bg-gray-50 dark:bg-gray-800 rounded-[44px] flex items-center justify-center mb-6 border-4 border-white dark:border-gray-950 shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden transition-all group-hover:scale-105 group-active:scale-95 cursor-pointer rotate-2">
+          <div className="w-28 h-28 md:w-32 md:h-32 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6 border-4 border-white dark:border-slate-900 shadow-xl overflow-hidden transition-all group-hover:scale-105 active:scale-95 cursor-pointer">
             {newPhotoURL || profile?.photoURL ? (
               <img 
                 src={newPhotoURL || profile?.photoURL} 
                 alt={profile?.displayName} 
-                className="w-full h-full object-cover -rotate-2" 
+                className="w-full h-full object-cover" 
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <User className="w-14 h-14 text-blue-600 dark:text-blue-400 -rotate-2" />
+              <User className="w-12 h-12 text-slate-300" />
             )}
             <div 
               onClick={() => setIsEditing(true)}
-              className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-[40px]"
+              className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
             >
-              <Camera className="text-white" size={28} />
+              <Camera className="text-white" size={24} />
             </div>
           </div>
           {isEditing && (
             <motion.div 
-              initial={{ scale: 0, rotate: -45 }} 
-              animate={{ scale: 1, rotate: 0 }}
-              className="absolute -bottom-1 -right-1 w-10 h-10 bg-blue-600 rounded-2xl border-4 border-white dark:border-gray-950 flex items-center justify-center shadow-xl z-10"
+              initial={{ scale: 0 }} 
+              animate={{ scale: 1 }}
+              className="absolute -bottom-1 -right-1 w-9 h-9 bg-indigo-600 rounded-full border-4 border-white dark:border-slate-900 flex items-center justify-center shadow-lg z-10"
             >
-              <Sparkles size={16} className="text-white" />
+              <Sparkles size={14} className="text-white" />
             </motion.div>
           )}
         </div>
 
         {isEditing ? (
-          <div className="flex flex-col items-center gap-6 w-full animate-in fade-in zoom-in duration-300 px-4">
+          <div className="flex flex-col items-center gap-6 w-full animate-in fade-in zoom-in duration-300">
             <div className="w-full space-y-6">
               <div>
-                <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1 mb-3 block">Phong cách đại diện</label>
+                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest ml-1 mb-3 block">Ảnh đại diện</label>
                 <div className="flex gap-3 pb-4 overflow-x-auto no-scrollbar scroll-smooth">
                     {defaultAvatars.map((url, i) => (
                         <button 
                             key={i}
                             onClick={() => setNewPhotoURL(url)}
                             className={cn(
-                                "w-14 h-14 rounded-2xl flex-shrink-0 border-4 transition-all overflow-hidden shadow-sm",
-                                newPhotoURL === url ? "border-blue-600 scale-110 shadow-blue-500/20" : "border-transparent opacity-40 hover:opacity-100"
+                                "w-12 h-12 rounded-full flex-shrink-0 border-2 transition-all overflow-hidden",
+                                newPhotoURL === url ? "border-indigo-600 scale-110 shadow-lg shadow-indigo-500/20" : "border-transparent opacity-40 hover:opacity-100"
                             )}
                         >
                             <img src={url} alt="" className="w-full h-full object-cover" />
@@ -289,62 +289,62 @@ export default function Profile() {
                         type="text"
                         value={newPhotoURL}
                         onChange={e => setNewPhotoURL(e.target.value)}
-                        placeholder="Hoặc dán URL ảnh tại đây..."
-                        className="w-full bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-800 rounded-3xl px-6 py-4 font-bold text-sm text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 transition-all shadow-inner"
+                        placeholder="Dán URL ảnh..."
+                        className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-5 py-3 font-medium text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all shadow-sm"
                     />
-                    <Camera className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                    <Camera className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                 </div>
               </div>
               
-              <div className="grid gap-5">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1 block text-left">Họ và tên</label>
+              <div className="grid gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest ml-1 block text-left">Họ và tên</label>
                   <div className="relative">
                       <input 
                           type="text"
                           value={newName}
                           onChange={e => setNewName(e.target.value)}
-                          className="w-full bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-800 rounded-3xl px-6 py-4 font-black text-sm text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 transition-all"
+                          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-5 py-3 font-semibold text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all"
                       />
-                      <User className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-300" size={18} />
+                      <User className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1 block text-left">Số điện thoại</label>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest ml-1 block text-left">Số điện thoại</label>
                   <div className="relative">
                       <input 
                           type="tel"
                           value={newPhone}
                           onChange={e => setNewPhone(e.target.value)}
                           placeholder="VD: 0912345678"
-                          className="w-full bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-800 rounded-3xl px-6 py-4 font-black text-sm text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 transition-all"
+                          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-5 py-3 font-semibold text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all"
                       />
-                      <Phone className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-300" size={18} />
+                      <Phone className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1 block text-left">Địa chỉ liên hệ</label>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest ml-1 block text-left">Địa chỉ liên hệ</label>
                   <div className="relative">
                       <input 
                           type="text"
                           value={newAddress}
                           onChange={e => setNewAddress(e.target.value)}
-                          placeholder="Nhập địa chỉ của bạn"
-                          className="w-full bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-800 rounded-3xl px-6 py-4 font-black text-sm text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 transition-all"
+                          placeholder="Nhập địa chỉ"
+                          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-5 py-3 font-semibold text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all"
                       />
-                      <MapPin className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-300" size={18} />
+                      <MapPin className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
                   </div>
                 </div>
               </div>
             </div>
             
-            <div className="flex gap-4 w-full mt-4">
+            <div className="flex gap-3 w-full mt-2">
               <button 
                 onClick={() => setShowConfirmSave(true)}
                 disabled={isSaving}
-                className="flex-[2] py-5 bg-blue-600 text-white rounded-[28px] font-black uppercase text-[11px] tracking-widest shadow-2xl shadow-blue-500/30 active:scale-95 transition-all disabled:opacity-50"
+                className="flex-[2] py-4 bg-indigo-600 text-white rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-indigo-500/20 active:scale-95 transition-all disabled:opacity-50"
               >
                 {isSaving ? 'Đang lưu...' : 'Lưu hồ sơ'}
               </button>
@@ -356,62 +356,60 @@ export default function Profile() {
                     setNewPhone(profile?.phoneNumber || '');
                     setNewAddress(profile?.address || '');
                 }}
-                className="flex-1 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-[28px] font-black uppercase text-[11px] tracking-widest active:scale-95 transition-all"
+                className="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-xl font-bold uppercase text-xs tracking-widest active:scale-95 transition-all"
               >
-                Thoát
+                Hủy
               </button>
             </div>
           </div>
         ) : (
-          <div className="text-center animate-in fade-in slide-in-from-top-4 duration-500 px-4">
-            <div className="flex items-center justify-center gap-3 mb-3">
-              <h2 className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter font-display uppercase italic">{profile?.displayName || 'Tài khoản'}</h2>
+          <div className="text-center animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <h2 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">{profile?.displayName || 'Thành viên'}</h2>
               <button 
                 onClick={() => setIsEditing(true)} 
-                className="w-8 h-8 flex items-center justify-center bg-blue-50 dark:bg-blue-900/40 rounded-xl text-blue-600 dark:text-blue-400 hover:scale-110 active:rotate-12 transition-all shadow-sm"
+                className="w-7 h-7 flex items-center justify-center bg-indigo-50 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400 hover:scale-110 transition-all"
               >
-                <Edit2 size={14} />
+                <Edit2 size={12} />
               </button>
             </div>
-            <div className="inline-flex items-center gap-2.5 px-5 py-2 bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full border border-gray-100 dark:border-gray-700 shadow-inner">
-                <Mail size={12} className="text-gray-400" />
-                <span className="text-gray-600 dark:text-gray-300 text-[11px] font-black uppercase tracking-widest leading-none">{profile?.email}</span>
+            <div className="inline-flex items-center gap-2 px-4 py-1 bg-slate-50/50 dark:bg-slate-800/50 rounded-full border border-slate-200 dark:border-slate-800">
+                <Mail size={10} className="text-slate-400" />
+                <span className="text-slate-500 dark:text-slate-400 text-[11px] font-medium tracking-wide leading-none">{profile?.email}</span>
             </div>
           </div>
         )}
       </header>
 
-      <section className="bg-white dark:bg-gray-900 rounded-[48px] overflow-hidden border border-gray-100 dark:border-gray-800 shadow-[0_20px_50px_rgba(0,0,0,0.03)] space-y-px">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm divide-y divide-slate-100 dark:divide-slate-800">
         {menuItems.map((item, index) => (
           <button 
             key={index}
             onClick={item.onClick}
-            className={cn(
-              "w-full flex items-center gap-5 p-7 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-all text-left group border-b border-gray-50 dark:border-gray-800 last:border-b-0",
-            )}
+            className="w-full flex items-center gap-4 p-5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all text-left group"
           >
-            <div className="w-12 h-12 flex items-center justify-center bg-gray-50 dark:bg-gray-800 rounded-2xl group-hover:bg-white dark:group-hover:bg-gray-700 shadow-sm group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shrink-0">
+            <div className="w-10 h-10 flex items-center justify-center bg-slate-50 dark:bg-slate-800 rounded-xl group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/20 group-hover:scale-105 transition-all shrink-0">
               {item.icon}
             </div>
             <div className="flex-1">
-              <h4 className="font-black text-gray-900 dark:text-white text-[13px] tracking-tight font-display uppercase italic">{item.label}</h4>
-              <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-widest mt-1 opacity-70">{item.sub}</p>
+              <h4 className="font-bold text-slate-900 dark:text-white text-sm tracking-tight">{item.label}</h4>
+              <p className="text-[11px] text-slate-500 mt-0.5">{item.sub}</p>
             </div>
-            {item.right || <ChevronRight className="w-5 h-5 text-gray-200 dark:text-gray-700 group-hover:translate-x-1 transition-transform" />}
+            {item.right || <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-0.5 transition-transform" />}
           </button>
         ))}
-      </section>
+      </div>
 
       <button 
         onClick={logout}
-        className="w-full flex items-center justify-center gap-4 p-7 bg-rose-50/80 dark:bg-rose-900/10 text-rose-600 dark:text-rose-400 rounded-[48px] font-black uppercase text-[11px] tracking-[0.2em] border border-rose-100 dark:border-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/20 transition-all shadow-sm active:scale-[0.98]"
+        className="w-full flex items-center justify-center gap-3 py-5 px-6 bg-white dark:bg-slate-900 text-rose-600 rounded-2xl font-bold uppercase text-xs tracking-widest border border-rose-100 dark:border-rose-900/30 hover:bg-rose-50 dark:hover:bg-rose-900/10 transition-all shadow-sm active:scale-[0.98]"
       >
-        <LogOut size={18} className="translate-y-[-1px]" />
-        <span>Đăng xuất ngay</span>
+        <LogOut size={18} />
+        <span>Đăng xuất</span>
       </button>
 
-      <p className="text-center text-[10px] text-gray-300 dark:text-gray-700 font-bold uppercase tracking-[0.3em] py-8">
-        MyGroups Smart Manager © 2026
+      <p className="text-center text-[10px] text-slate-300 dark:text-slate-700 font-bold uppercase tracking-[0.2em] pt-4">
+        Enterprise Workspace v3.0
       </p>
 
       {/* Change Password Modal */}

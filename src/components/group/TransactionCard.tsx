@@ -262,7 +262,7 @@ export const TransactionCard: React.FC<TransactionCardProps> = ({ transaction, g
                )}
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] text-gray-900 dark:text-white font-black uppercase tracking-widest leading-none">{creator?.displayName || 'Thành viên'}</span>
+              <span className="text-xs font-black uppercase tracking-widest leading-none">{creator?.displayName || 'Thành viên'}</span>
               <span className="text-[9px] text-gray-400 font-bold uppercase tracking-tight mt-1">{formatDate(transaction.createdAt)}</span>
             </div>
           </div>

@@ -167,14 +167,14 @@
         "groupId": { "type": "string" },
         "title": { "type": "string" },
         "description": { "type": "string" },
-        "assigneeId": { "type": "string" },
-        "assigneeName": { "type": "string" },
+        "assigneeIds": { "type": "array", "items": { "type": "string" } },
+        "assigneeNames": { "type": "array", "items": { "type": "string" } },
         "status": { "type": "string", "enum": ["pending", "doing", "done"] },
         "dueDate": { "type": "string", "format": "date-time" },
         "createdBy": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["id", "groupId", "title", "assigneeId", "status", "createdBy", "createdAt"]
+      "required": ["id", "groupId", "title", "assigneeIds", "status", "createdBy", "createdAt"]
     },
     "ChatMessage": {
       "title": "ChatMessage",

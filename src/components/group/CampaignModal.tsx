@@ -53,21 +53,22 @@ export default function CampaignModal({ group, onClose }: CampaignModalProps) {
       />
       <motion.div 
         initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        className="relative bg-white w-full max-w-sm rounded-[40px] p-8 shadow-2xl"
+        className="relative bg-white w-full max-w-sm rounded-[32px] md:rounded-[40px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
       >
-        <button onClick={onClose} className="absolute top-6 right-6 p-2 bg-gray-100 rounded-full text-gray-400">
-          <X size={18} />
-        </button>
+        <div className="overflow-y-auto p-6 md:p-8 no-scrollbar">
+          <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-gray-100 rounded-full text-gray-400 z-10">
+            <X size={18} />
+          </button>
 
-        <div className="mb-6">
-          <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4">
-            <Flag size={24} />
+          <div className="mb-6 pr-8">
+            <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4">
+              <Flag size={24} />
+            </div>
+            <h3 className="text-xl font-black text-gray-900">Tạo sự kiện mới</h3>
+            <p className="text-xs text-gray-400 font-medium">Quản lý ngân sách riêng cho các hoạt động cụ thể</p>
           </div>
-          <h3 className="text-xl font-black text-gray-900">Tạo sự kiện mới</h3>
-          <p className="text-xs text-gray-400 font-medium">Quản lý ngân sách riêng cho các hoạt động cụ thể</p>
-        </div>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1 mb-2 block">Tên sự kiện / Chiến dịch</label>
             <div className="relative">
@@ -120,6 +121,7 @@ export default function CampaignModal({ group, onClose }: CampaignModalProps) {
             {isSubmitting ? 'Đang tạo...' : 'Xác nhận tạo sự kiện'}
           </button>
         </form>
+        </div>
       </motion.div>
     </div>
   );

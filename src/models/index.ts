@@ -108,8 +108,8 @@ export interface Task {
   groupId: string;
   title: string;
   description: string;
-  assigneeId: string;
-  assigneeName: string;
+  assigneeIds: string[];
+  assigneeNames: string[];
   status: TaskStatus;
   dueDate?: Date;
   createdBy: string;

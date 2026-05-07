@@ -157,16 +157,17 @@ export default function InviteModal({ group, onClose, isAdmin }: InviteModalProp
       />
       <motion.div 
         initial={{ opacity: 0, scale: 0.9, y: 100 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 100 }}
-        className="relative bg-white dark:bg-gray-900 w-full max-w-sm rounded-t-[40px] sm:rounded-[40px] p-8 shadow-2xl"
+        className="relative bg-white dark:bg-gray-900 w-full max-w-sm rounded-[32px] md:rounded-[40px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
       >
-        <button onClick={onClose} className="absolute top-6 right-6 p-2 bg-gray-100 dark:bg-gray-800 rounded-full text-gray-400">
-          <X size={18} />
-        </button>
+        <div className="overflow-y-auto p-6 md:p-8 no-scrollbar">
+          <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-gray-100 dark:bg-gray-800 rounded-full text-gray-400 z-10">
+            <X size={18} />
+          </button>
 
-        <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">Mời thành viên</h3>
-        <p className="text-xs text-gray-400 mb-6 font-medium">Nhập Email hoặc SĐT người dùng để mời.</p>
-        
-        <form onSubmit={handleSendInvite} className="space-y-4 mb-8">
+          <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2 pr-8">Mời thành viên</h3>
+          <p className="text-xs text-gray-400 mb-6 font-medium">Nhập Email hoặc SĐT người dùng để mời.</p>
+          
+          <form onSubmit={handleSendInvite} className="space-y-4 mb-8">
           <div className="relative">
             <input 
               autoFocus
@@ -206,6 +207,7 @@ export default function InviteModal({ group, onClose, isAdmin }: InviteModalProp
           >
             <CheckCircle2 size={16} /> Sao chép link mời
           </button>
+        </div>
         </div>
       </motion.div>
     </div>

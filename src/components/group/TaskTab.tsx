@@ -51,7 +51,7 @@ export default function TaskTab({ groupId, groupName, canManage, onAddTask, owne
 
   const handleUpdateStatus = async (task: Task, newStatus: TaskStatus) => {
     if (!auth.currentUser) return;
-    const isAssignee = task.assigneeId === auth.currentUser.uid;
+    const isAssignee = task.assigneeIds?.includes(auth.currentUser.uid);
     const isOwner = ownerId === auth.currentUser.uid;
     
     if (!isAssignee && !isOwner) {
@@ -70,7 +70,7 @@ export default function TaskTab({ groupId, groupName, canManage, onAddTask, owne
       const statusText = newStatus === 'doing' ? 'bắt đầu làm' : 
                          newStatus === 'done' ? 'hoàn thành' : 'hoàn tác về chờ';
       
-      const changerName = isAssignee ? task.assigneeName : 'Trưởng nhóm';
+      const changerName = auth.currentUser.displayName || 'Thành viên';
 
       // Notify owner if changer is not owner
       if (!isOwner) {
@@ -83,24 +83,30 @@ export default function TaskTab({ groupId, groupName, canManage, onAddTask, owne
         });
       }
 
-      // Notify assignee if changer is not assignee
-      if (!isAssignee) {
-        await NotificationService.sendNotification(task.assigneeId, {
-          title: 'Cập nhật công việc',
-          message: `Trưởng nhóm đã ${statusText} công việc của bạn: "${task.title}"`,
+      // Notify other assignees if changer is one of them
+      const otherAssignees = (task.assigneeIds || []).filter(id => id !== auth.currentUser?.uid);
+      const assigneeNotifications = otherAssignees.map(id => 
+        NotificationService.sendNotification(id, {
+          title: 'Cập nhật công việc nhóm',
+          message: `${changerName} đã ${statusText} công việc chung: "${task.title}"`,
           type: 'system',
           category: 'tasks',
           data: { groupId, taskId: task.id }
-        });
-      }
+        })
+      );
+      await Promise.all(assigneeNotifications);
 
       // Notify all members if task is completed
       if (newStatus === 'done') {
-        const otherMembers = members.filter(m => m.uid !== auth.currentUser?.uid && m.uid !== ownerId && m.uid !== task.assigneeId);
+        const otherMembers = members.filter(m => 
+          m.uid !== auth.currentUser?.uid && 
+          m.uid !== ownerId && 
+          !(task.assigneeIds || []).includes(m.uid)
+        );
         const memberNotifications = otherMembers.map(m => 
           NotificationService.sendNotification(m.uid, {
             title: 'Công việc hoàn thành',
-            message: `${task.assigneeName} đã hoàn thành công việc: "${task.title}"`,
+            message: `Công việc "${task.title}" đã được hoàn thành`,
             type: 'system',
             category: 'tasks',
             data: { groupId, taskId: task.id }
@@ -122,7 +128,7 @@ export default function TaskTab({ groupId, groupName, canManage, onAddTask, owne
   };
 
   const onDragStart = (e: React.DragEvent, task: Task) => {
-    const isAssignee = auth.currentUser?.uid === task.assigneeId;
+    const isAssignee = auth.currentUser?.uid && (task.assigneeIds || []).includes(auth.currentUser.uid);
     const isOwner = auth.currentUser?.uid === ownerId;
     
     if (!isAssignee && !isOwner) {
@@ -163,10 +169,14 @@ export default function TaskTab({ groupId, groupName, canManage, onAddTask, owne
     { status: 'done', label: 'Hoàn thành', color: 'emerald', icon: CheckCircle2 },
   ];
 
-  const uniqueAssignees = Array.from(new Map(tasks.map(t => [t.assigneeId, t.assigneeName])).entries());
+  const uniqueAssignees = Array.from(
+    new Map(
+      tasks.flatMap(t => (t.assigneeIds || []).map((id, idx) => [id, (t.assigneeNames || [])[idx]]))
+    ).entries()
+  );
 
   const filteredTasks = tasks.filter(task => {
-    const matchesAssignee = filterAssignee === 'all' || task.assigneeId === filterAssignee;
+    const matchesAssignee = filterAssignee === 'all' || (task.assigneeIds || []).includes(filterAssignee);
     
     let matchesDueDate = true;
     if (filterDueDate !== 'all') {
@@ -218,7 +228,7 @@ export default function TaskTab({ groupId, groupName, canManage, onAddTask, owne
               <select 
                 value={filterAssignee}
                 onChange={(e) => setFilterAssignee(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-white dark:bg-gray-900 border-none rounded-xl text-[10px] font-black uppercase tracking-tight appearance-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full pl-9 pr-4 py-2 bg-white dark:bg-gray-900 border-none rounded-xl text-xs font-black uppercase tracking-tight appearance-none focus:ring-2 focus:ring-blue-500/20"
               >
                 <option value="all">Tất cả người giao</option>
                 {uniqueAssignees.map(([id, name]) => (
@@ -231,7 +241,7 @@ export default function TaskTab({ groupId, groupName, canManage, onAddTask, owne
               <select 
                 value={filterDueDate}
                 onChange={(e) => setFilterDueDate(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-white dark:bg-gray-900 border-none rounded-xl text-[10px] font-black uppercase tracking-tight appearance-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full pl-9 pr-4 py-2 bg-white dark:bg-gray-900 border-none rounded-xl text-xs font-black uppercase tracking-tight appearance-none focus:ring-2 focus:ring-blue-500/20"
               >
                 <option value="all">Mọi thời hạn</option>
                 <option value="today">Hôm nay</option>
@@ -244,7 +254,7 @@ export default function TaskTab({ groupId, groupName, canManage, onAddTask, owne
               <select 
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="w-full pl-9 pr-4 py-2 bg-white dark:bg-gray-900 border-none rounded-xl text-[10px] font-black uppercase tracking-tight appearance-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full pl-9 pr-4 py-2 bg-white dark:bg-gray-900 border-none rounded-xl text-xs font-black uppercase tracking-tight appearance-none focus:ring-2 focus:ring-blue-500/20"
               >
                 <option value="createdAt">Mới nhất</option>
                 <option value="dueDate">Hạn chót</option>
@@ -279,16 +289,16 @@ export default function TaskTab({ groupId, groupName, canManage, onAddTask, owne
               )}>
                 <div className="flex items-center gap-2">
                   <column.icon size={14} className={column.status === 'doing' ? "animate-pulse" : ""} />
-                  <span className="text-[10px] font-black uppercase tracking-tight">{column.label}</span>
+                  <span className="text-xs font-black uppercase tracking-tight">{column.label}</span>
                 </div>
-                <span className="text-[10px] font-bold opacity-60">
+                <span className="text-xs font-bold opacity-60">
                   {filteredTasks.filter(t => t.status === column.status).length}
                 </span>
               </div>
 
               <div className="space-y-4">
                 {filteredTasks.filter(t => t.status === column.status).map((task) => {
-                  const isAssignee = auth.currentUser?.uid === task.assigneeId;
+                  const isAssignee = auth.currentUser?.uid && (task.assigneeIds || []).includes(auth.currentUser.uid);
                   const isOwner = auth.currentUser?.uid === ownerId;
                   const canDrag = isAssignee || isOwner;
                   const isOverdue = task.dueDate && task.status !== 'done' && task.dueDate < new Date();
@@ -320,14 +330,37 @@ export default function TaskTab({ groupId, groupName, canManage, onAddTask, owne
                           )}
                         </h4>
                         {task.description && (
-                          <p className="text-[10px] text-gray-400 mt-1 line-clamp-2 leading-tight">{task.description}</p>
+                          <p className="text-xs text-gray-400 mt-1 line-clamp-2 leading-tight">{task.description}</p>
                         )}
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <User size={10} className="text-gray-300" />
-                          <p className="text-[9px] font-bold dark:text-gray-400">{task.assigneeName} {isAssignee && '(Bạn)'}</p>
+                          <div className="flex -space-x-1.5">
+                            {(task.assigneeIds || []).slice(0, 3).map((id, idx) => (
+                              <div 
+                                key={id} 
+                                className="w-5 h-5 rounded-full border border-white dark:border-gray-950 bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden shrink-0"
+                                title={(task.assigneeNames || [])[idx]}
+                              >
+                                {members.find(m => m.uid === id)?.photoURL ? (
+                                  <img src={members.find(m => m.uid === id)?.photoURL} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                  <span className="text-[6px] font-bold dark:text-gray-400">{(task.assigneeNames || [])[idx]?.charAt(0)}</span>
+                                )}
+                              </div>
+                            ))}
+                            {(task.assigneeIds || []).length > 3 && (
+                              <div className="w-5 h-5 rounded-full border border-white dark:border-gray-950 bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[6px] font-bold text-gray-500 shrink-0">
+                                +{(task.assigneeIds || []).length - 3}
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-xs font-bold dark:text-gray-400 truncate max-w-[120px]">
+                            {(task.assigneeNames || []).slice(0, 1).join('')} 
+                            {(task.assigneeNames || []).length > 1 && ` và ${(task.assigneeNames || []).length - 1} người khác`}
+                          </p>
                         </div>
                         {task.dueDate && (
                           <div className={cn(
@@ -335,7 +368,7 @@ export default function TaskTab({ groupId, groupName, canManage, onAddTask, owne
                             isOverdue ? "text-red-500" : "text-gray-400"
                           )}>
                             <Calendar size={10} />
-                            <p className="text-[9px] font-bold">
+                            <p className="text-xs font-bold">
                               {formatDate(task.dueDate)}
                             </p>
                           </div>
@@ -347,7 +380,7 @@ export default function TaskTab({ groupId, groupName, canManage, onAddTask, owne
 
                 {filteredTasks.filter(t => t.status === column.status).length === 0 && (
                   <div className="h-20 rounded-[28px] border-2 border-dashed border-gray-100 dark:border-gray-800 flex items-center justify-center text-gray-300">
-                    <p className="text-[10px] font-bold uppercase tracking-widest">Trống</p>
+                    <p className="text-xs font-bold uppercase tracking-widest">Trống</p>
                   </div>
                 )}
               </div>

@@ -47,18 +47,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-950 font-sans selection:bg-blue-100 dark:selection:bg-blue-900/30">
       {/* Header */}
       {!isGroupDetail && (
-        <header className="sticky top-0 z-40 w-full bg-white/70 dark:bg-black/70 backdrop-blur-2xl border-b-2 border-gray-900 dark:border-white/20 flex justify-between items-center px-8 py-6">
-          <div className="flex items-center gap-4 group">
-            <div className="w-11 h-11 bg-gray-900 dark:bg-white rounded-[14px] flex items-center justify-center transform group-hover:rotate-12 transition-transform shadow-[4px_4px_0px_rgba(37,99,235,1)]">
-              <span className="text-white dark:text-gray-900 font-display font-black text-2xl italic leading-none translate-y-[-1px]">M</span>
+        <header className="sticky top-0 z-40 w-full bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 flex justify-between items-center px-4 sm:px-8 py-3 sm:py-4">
+          <div className="flex items-center gap-3 sm:gap-4 group">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-slate-900 dark:bg-indigo-600 rounded-lg flex items-center justify-center transform group-hover:scale-105 transition-all shadow-lg">
+              <span className="text-white font-bold text-lg sm:text-xl leading-none">M</span>
             </div>
-            <h1 className="text-3xl font-display font-black text-gray-900 dark:text-white tracking-tighter uppercase italic leading-none">MyGroups</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">MyGroups</h1>
           </div>
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-3 sm:gap-5">
             <NavLink to="/profile" className="flex-shrink-0">
-              <div className="w-12 h-12 rounded-[16px] p-[2px] bg-gray-900 dark:bg-white shadow-xl active:scale-95 transition-all">
-                <div className="w-full h-full rounded-[14px] bg-white dark:bg-gray-900 flex items-center justify-center overflow-hidden">
-                  <User className="w-6 h-6 text-gray-900 dark:text-white" />
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full p-[2px] bg-slate-100 dark:bg-slate-800 shadow-sm active:scale-95 transition-all border border-slate-200 dark:border-slate-700">
+                <div className="w-full h-full rounded-full bg-white dark:bg-slate-900 flex items-center justify-center overflow-hidden">
+                  <User className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600 dark:text-slate-400" />
                 </div>
               </div>
             </NavLink>
@@ -70,9 +70,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <main className={cn("flex-1 pb-36 max-w-lg mx-auto w-full", isGroupDetail && "pt-0")}>
         <motion.div
           key={location.pathname}
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         >
           {children}
         </motion.div>
@@ -85,40 +85,24 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       />
 
       {/* Floating Bottom Navigation */}
-      <div className="fixed bottom-10 left-0 right-0 z-40 px-8 max-w-lg mx-auto pointer-events-none">
-        <nav className="bg-white/95 dark:bg-black/95 backdrop-blur-3xl border-2 border-gray-900 dark:border-white flex justify-between items-center px-4 py-4 rounded-[40px] shadow-[12px_12px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_rgba(255,255,255,1)] pointer-events-auto relative">
-          <NavItem to="/" icon={<Home className="w-7 h-7" />} label="Home" />
-          <NavItem to="/groups" icon={<Users className="w-7 h-7" />} label="Nhóm" />
-          
-          <div className="relative h-full flex items-center px-1">
-            <NavLink to="/create-group">
-              {({ isActive }) => (
-                <div className={cn(
-                  "w-16 h-16 rounded-[22px] flex items-center justify-center border-2 border-gray-900 dark:border-white transition-all duration-500 hover:translate-y-[-4px] active:scale-95 relative z-10 shadow-lg",
-                  isActive 
-                    ? "bg-blue-600 text-white rotate-45" 
-                    : "bg-gray-900 dark:bg-white text-white dark:text-gray-900"
-                )}>
-                  <PlusCircle className={cn("w-10 h-10 transition-transform duration-500", isActive ? "-rotate-45" : "")} />
-                </div>
-              )}
-            </NavLink>
-          </div>
-
-          <NavItem to="/profile" icon={<User className="w-7 h-7" />} label="Hồ sơ" />
+      <div className="fixed bottom-6 md:bottom-10 left-0 right-0 z-40 px-4 sm:px-8 max-w-lg mx-auto pointer-events-none">
+        <nav className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200 dark:border-slate-800 flex justify-around items-center px-4 h-[64px] rounded-3xl shadow-2xl shadow-slate-200/50 dark:shadow-none pointer-events-auto relative">
+          <NavItem to="/" icon={<Home className="w-5 h-5 md:w-6 md:h-6" />} label="Home" />
+          <NavItem to="/profile" icon={<User className="w-5 h-5 md:w-6 md:h-6" />} label="Hồ sơ" />
           <button 
             onClick={() => setIsNotifOpen(true)}
-            className="flex flex-col items-center gap-1 px-4 transition-all relative group"
+            className="flex flex-col items-center gap-1.5 px-4 transition-all relative group h-full justify-center"
           >
             <div className={cn(
-              "text-gray-400 group-hover:text-blue-500 transition-colors",
-              unreadCount > 0 && "text-blue-600"
+              "text-slate-400 group-hover:text-indigo-600 transition-colors",
+              unreadCount > 0 && "text-indigo-600",
+              isShaking && "animate-bounce"
             )}>
-              <Bell className="w-7 h-7" />
+              <Bell className="w-5 h-5 md:w-6 md:h-6" />
             </div>
-            <span className="text-[10px] font-black uppercase tracking-tighter text-gray-500 font-display italic leading-none">Báo tin</span>
+            <span className="text-[10px] font-bold text-slate-500 leading-none">Báo tin</span>
             {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-6 w-3 h-3 bg-rose-500 rounded-full border-2 border-white dark:border-black animate-pulse" />
+              <span className="absolute top-3 right-5 md:right-7 w-2.5 h-2.5 md:w-3 md:h-3 bg-rose-500 rounded-full border-2 border-white dark:border-slate-900 animate-pulse" />
             )}
           </button>
         </nav>
@@ -128,12 +112,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 }
 
 function NavItem({ to, icon, label }: { to: string, icon: React.ReactElement, label: string }) {
+  const location = useLocation();
+  const isActive = location.pathname === to;
   return (
     <NavLink 
       to={to} 
-      className={({ isActive }) => cn(
-        "flex flex-col items-center gap-1.5 px-4 py-2 transition-all relative group",
-        isActive ? "text-blue-600" : "text-gray-400 hover:text-gray-600"
+      className={cn(
+        "flex flex-col items-center gap-1.5 px-4 h-full justify-center transition-all relative group",
+        isActive ? "text-indigo-600" : "text-slate-400 hover:text-slate-600"
       )}
     >
       <div className={cn(
@@ -142,18 +128,16 @@ function NavItem({ to, icon, label }: { to: string, icon: React.ReactElement, la
       )}>
         {icon}
       </div>
-      <span className="text-[9px] font-black uppercase tracking-widest font-display italic leading-none">{label}</span>
-      <AnimatePresence>
-        {to === useLocation().pathname && (
-          <motion.div 
-            layoutId="nav-dot"
-            className="absolute -bottom-1 w-1 h-1 bg-current rounded-full"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            exit={{ scale: 0 }}
-          />
-        )}
-      </AnimatePresence>
+      <span className="text-[10px] font-bold leading-none">{label}</span>
+      {isActive && (
+        <motion.div 
+          layoutId="nav-line"
+          className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-full mx-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.2 }}
+        />
+      )}
     </NavLink>
   );
 }

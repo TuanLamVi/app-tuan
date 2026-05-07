@@ -18,6 +18,10 @@
   }
 }
 
+html {
+  font-size: 130%;
+}
+
 body {
   @apply bg-gray-50 text-gray-900 transition-colors duration-300;
 }

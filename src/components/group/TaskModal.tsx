@@ -5,6 +5,7 @@ import { UserProfile, TaskStatus } from '../../models';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, CheckCircle, User, Calendar, Type, AlignLeft } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { cn } from '../../core/utils';
 import { handleFirestoreError, OperationType } from '../../hooks/useAuth';
 import { NotificationService } from '../../services/notificationService';
 
@@ -20,27 +21,34 @@ interface TaskModalProps {
 export default function TaskModal({ isOpen, onClose, groupId, groupName, members, ownerId }: TaskModalProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [assigneeId, setAssigneeId] = useState('');
+  const [selectedAssigneeIds, setSelectedAssigneeIds] = useState<string[]>([]);
   const [dueDate, setDueDate] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const toggleAssignee = (uid: string) => {
+    setSelectedAssigneeIds(prev => 
+      prev.includes(uid) ? prev.filter(id => id !== uid) : [...prev, uid]
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth.currentUser || !title || !assigneeId) {
-      toast.error('Vui lòng điền đủ thông tin bắt buộc');
+    if (!auth.currentUser || !title || selectedAssigneeIds.length === 0) {
+      toast.error('Vui lòng điền đủ thông tin và chọn người phụ trách');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const assigneeSub = members.find(m => m.uid === assigneeId);
+      const selectedMembers = members.filter(m => selectedAssigneeIds.includes(m.uid));
+      const assigneeNames = selectedMembers.map(m => m.displayName || 'Thành viên');
       
       const taskData = {
         groupId,
         title,
         description,
-        assigneeId,
-        assigneeName: assigneeSub?.displayName || 'Thành viên',
+        assigneeIds: selectedAssigneeIds,
+        assigneeNames,
         status: 'pending' as TaskStatus,
         dueDate: dueDate ? new Date(dueDate) : null,
         createdBy: auth.currentUser.uid,
@@ -49,20 +57,23 @@ export default function TaskModal({ isOpen, onClose, groupId, groupName, members
 
       const docRef = await addDoc(collection(db, 'groups', groupId, 'tasks'), taskData);
 
-      // 1. Notify the assignee
-      await NotificationService.sendNotification(assigneeId, {
-        title: 'Công việc mới',
-        message: `Bạn được giao công việc: "${title}" trong nhóm "${groupName}"`,
-        type: 'system',
-        category: 'tasks',
-        data: { groupId, taskId: docRef.id }
-      });
+      // 1. Notify all assignees
+      const assigneeNotifications = selectedAssigneeIds.map(uid => 
+        NotificationService.sendNotification(uid, {
+          title: 'Công việc mới',
+          message: `Bạn được giao công việc: "${title}" trong nhóm "${groupName}"`,
+          type: 'system',
+          category: 'tasks',
+          data: { groupId, taskId: docRef.id }
+        })
+      );
+      await Promise.all(assigneeNotifications);
 
       // 2. Notify the owner if the creator is not the owner
       if (auth.currentUser.uid !== ownerId) {
         await NotificationService.sendNotification(ownerId, {
           title: 'Phân công việc mới',
-          message: `${auth.currentUser.displayName || 'Một quản trị viên'} đã giao việc "${title}" cho ${assigneeSub?.displayName || 'thành viên'}`,
+          message: `${auth.currentUser.displayName || 'Một quản trị viên'} đã giao việc "${title}" cho ${assigneeNames.join(', ')}`,
           type: 'system',
           category: 'tasks',
           data: { groupId, taskId: docRef.id }
@@ -70,7 +81,11 @@ export default function TaskModal({ isOpen, onClose, groupId, groupName, members
       }
 
       // 3. Notify all other group members about the new task
-      const otherGroupMembers = members.filter(m => m.uid !== auth.currentUser?.uid && m.uid !== ownerId && m.uid !== assigneeId);
+      const otherGroupMembers = members.filter(m => 
+        m.uid !== auth.currentUser?.uid && 
+        m.uid !== ownerId && 
+        !selectedAssigneeIds.includes(m.uid)
+      );
       const memberNotifications = otherGroupMembers.map(m => 
         NotificationService.sendNotification(m.uid, {
           title: 'Công việc mới trong nhóm',
@@ -86,7 +101,7 @@ export default function TaskModal({ isOpen, onClose, groupId, groupName, members
       onClose();
       setTitle('');
       setDescription('');
-      setAssigneeId('');
+      setSelectedAssigneeIds([]);
       setDueDate('');
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, `groups/${groupId}/tasks`);
@@ -153,20 +168,41 @@ export default function TaskModal({ isOpen, onClose, groupId, groupName, members
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1 mb-2 block">Người phụ trách</label>
-                  <div className="relative">
-                    <select
-                      required
-                      value={assigneeId}
-                      onChange={e => setAssigneeId(e.target.value)}
-                      className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-2xl px-11 py-4 font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 appearance-none"
-                    >
-                      <option value="">Chọn thành viên...</option>
-                      {members.map(member => (
-                        <option key={member.uid} value={member.uid}>{member.displayName} {member.uid === auth.currentUser?.uid ? '(Tôi)' : ''}</option>
-                      ))}
-                    </select>
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={18} />
+                  <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1 mb-2 block">Người phụ trách ({selectedAssigneeIds.length})</label>
+                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-1 scrollbar-hide">
+                    {members.map(member => {
+                      const isSelected = selectedAssigneeIds.includes(member.uid);
+                      return (
+                        <button
+                          key={member.uid}
+                          type="button"
+                          onClick={() => toggleAssignee(member.uid)}
+                          className={cn(
+                            "flex items-center gap-2 p-3 rounded-xl border-2 transition-all text-left",
+                            isSelected 
+                              ? "bg-blue-50 dark:bg-blue-900/20 border-blue-600 dark:border-blue-400" 
+                              : "bg-gray-50 dark:bg-gray-800 border-transparent hover:border-gray-200"
+                          )}
+                        >
+                          <div className="w-6 h-6 rounded-lg overflow-hidden flex-shrink-0 bg-gray-200">
+                            {member.photoURL ? (
+                              <img src={member.photoURL} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <User size={12} className="m-auto text-gray-400" />
+                            )}
+                          </div>
+                          <span className={cn(
+                            "text-xs font-bold truncate",
+                            isSelected ? "text-blue-700 dark:text-blue-300" : "text-gray-600 dark:text-gray-400"
+                          )}>
+                            {member.displayName}
+                          </span>
+                          {isSelected && (
+                            <CheckCircle size={14} className="ml-auto text-blue-600 shrink-0" />
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 

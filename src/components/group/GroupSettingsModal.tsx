@@ -70,12 +70,12 @@ export default function GroupSettingsModal({ group, onClose, isOwner }: GroupSet
       />
       <motion.div 
         initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        className="relative bg-white dark:bg-gray-900 w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden"
+        className="relative bg-white dark:bg-gray-900 w-full max-w-sm rounded-[32px] md:rounded-[40px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
       >
-        <div className="p-8">
-          <div className="flex justify-between items-center mb-8">
+        <div className="overflow-y-auto p-6 md:p-8 no-scrollbar">
+          <div className="flex justify-between items-center mb-8 pr-8">
             <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase italic tracking-tight">Cài đặt nhóm</h3>
-            <button onClick={onClose} className="p-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-400">
+            <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-400 z-10">
               <X size={20} />
             </button>
           </div>
@@ -193,7 +193,7 @@ export default function GroupSettingsModal({ group, onClose, isOwner }: GroupSet
           </div>
         </div>
 
-        <div className="bg-gray-50 dark:bg-gray-800/50 p-6 flex gap-3">
+        <div className="bg-gray-50 dark:bg-gray-800/50 p-4 md:p-6 flex gap-3 shrink-0">
           <button 
             onClick={onClose}
             className="flex-1 py-4 bg-white dark:bg-gray-800 text-gray-500 rounded-2xl font-black uppercase text-[10px] tracking-widest border border-gray-100 dark:border-gray-700 shadow-sm"

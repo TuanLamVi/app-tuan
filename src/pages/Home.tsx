@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useGroups } from '../hooks/useGroups';
-import { motion, AnimatePresence, Reorder } from 'motion/react';
+import { motion, AnimatePresence, Reorder, useDragControls } from 'motion/react';
 import { 
   Plus, Users, Wallet, ChevronRight, LayoutGrid, Sparkles, 
   Check, X, Bell, Pin, PinOff, GripVertical, Crown, MessageCircle 
@@ -48,7 +48,7 @@ const GroupUnreadBadge = ({ groupId, lastReadAt }: { groupId: string, lastReadAt
   if (unreadCount === 0) return null;
 
   return (
-    <div className="bg-red-500 text-white text-[10px] font-black min-w-[22px] h-[22px] px-1.5 rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(239,68,68,0.3)] animate-in zoom-in duration-300 shrink-0">
+    <div className="bg-red-500 text-white text-xs font-black min-w-[22px] h-[22px] px-1.5 rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(239,68,68,0.3)] animate-in zoom-in duration-300 shrink-0">
       {unreadCount >= 20 ? '9+' : unreadCount}
     </div>
   );
@@ -214,21 +214,6 @@ export default function Home() {
     }
   };
 
-  const onReorder = (newOrder: Group[]) => {
-    setOrderedGroups(newOrder);
-  };
-
-  const saveOrder = async () => {
-    if (!auth.currentUser) return;
-    try {
-      await updateDoc(doc(db, 'users', auth.currentUser.uid), {
-        groupOrder: orderedGroups.map(g => g.id)
-      });
-    } catch (err) {
-      console.error('Failed to save group order:', err);
-    }
-  };
-
   if (loading) {
     return (
       <div className="p-4 space-y-6">
@@ -242,103 +227,121 @@ export default function Home() {
   }
 
   return (
-    <div className="p-6 space-y-12 animate-in fade-in slide-in-from-bottom-12 duration-1000">
-      {/* Hyper-Modern Hero Section */}
-      <section className="relative overflow-hidden bg-white dark:bg-black rounded-[48px] p-10 text-gray-900 dark:text-white border-2 border-gray-900 dark:border-white shadow-[12px_12px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_rgba(255,255,255,1)]">
-        <div className="absolute top-[-10%] right-[-10%] w-[250px] h-[250px] bg-blue-500 rounded-full blur-[80px] opacity-10 animate-pulse" />
+    <div className="p-4 md:p-8 space-y-10 md:space-y-16 animate-in fade-in slide-in-from-bottom-10 duration-1000">
+      {/* Corporate Dashboard Hero Section */}
+      <section className="relative overflow-hidden bg-slate-900 dark:bg-black rounded-3xl md:rounded-[40px] p-8 md:p-14 text-white shadow-2xl shadow-slate-200 dark:shadow-none border border-slate-800">
+        <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-indigo-500/10 via-transparent to-transparent pointer-none" />
         
-        <div className="relative z-10">
-          <div className="flex items-center justify-between mb-12">
-             <div className="flex flex-col">
-               <span className="text-[12px] font-black uppercase tracking-[0.4em] text-blue-600 dark:text-blue-400 leading-none">Smart Hub</span>
-               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Ready for action</span>
-             </div>
-             <div className="w-12 h-12 bg-gray-900 dark:bg-white rounded-2xl flex items-center justify-center rotate-3 hover:rotate-0 transition-transform">
-               <Sparkles size={24} className="text-white dark:text-gray-900" />
-             </div>
-          </div>
-          
-          <div className="space-y-4 mb-12">
-            <h2 className="text-6xl font-black tracking-tighter italic uppercase font-display leading-[0.85] animate-in slide-in-from-left duration-700">KẾT NỐI</h2>
-            <div className="flex items-center gap-4">
-              <div className="h-2 w-16 bg-blue-600 rounded-full" />
-              <h2 className="text-6xl font-black tracking-tighter italic uppercase font-display leading-[0.85] text-blue-600 dark:text-blue-400">NHÓM</h2>
+        <div className="relative z-10 grid md:grid-cols-2 gap-12 items-center text-left">
+          <div className="space-y-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/10">
+              <Sparkles size={14} className="text-amber-400" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-200">Executive Workspace</span>
             </div>
-            <h2 className="text-6xl font-black tracking-tighter italic uppercase font-display leading-[0.85] animate-in slide-in-from-left duration-1000 delay-200">BẠN BÈ.</h2>
+            
+            <div className="space-y-4">
+              <h2 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight">
+                Quản lý nhóm <br />
+                <span className="text-indigo-400">chuyên nghiệp.</span>
+              </h2>
+              <p className="text-slate-400 text-sm md:text-lg max-w-md leading-relaxed">
+                Nâng tầm quản trị nhóm, minh bạch tài chính và thắt chặt kết nối cộng đồng của bạn.
+              </p>
+            </div>
+            
+            <div className="flex flex-wrap gap-4 pt-4">
+              <Link 
+                to="/create-group"
+                className="inline-flex items-center gap-3 bg-white text-slate-900 px-8 py-4 rounded-xl text-xs font-bold uppercase tracking-widest transition-all hover:bg-slate-100 hover:translate-y-[-2px] active:scale-95 shadow-xl shadow-white/10"
+              >
+                <Plus size={18} />
+                Tạo nhóm mới
+              </Link>
+              <button 
+                className="inline-flex items-center gap-3 bg-slate-800 text-white px-8 py-4 rounded-xl text-xs font-bold uppercase tracking-widest border border-slate-700 transition-all hover:bg-slate-700"
+              >
+                <LayoutGrid size={18} />
+                Khám phá
+              </button>
+            </div>
           </div>
-          
-          <div className="flex gap-4">
-            <Link 
-              to="/create-group"
-              className="group/btn flex-[2] flex items-center justify-center gap-3 bg-gray-900 dark:bg-white text-white dark:text-gray-950 px-8 py-5 rounded-[24px] text-[11px] font-black uppercase tracking-[0.2em] transition-all hover:translate-y-[-4px] active:scale-95 shadow-xl"
-            >
-              <Plus className="w-5 h-5 group-hover/btn:rotate-90 transition-transform duration-500" />
-              Bắt đầu ngay
-            </Link>
-            <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-[24px] flex items-center justify-center hover:bg-blue-600 dark:hover:bg-blue-500 group transition-all cursor-pointer active:scale-90">
-              <LayoutGrid size={28} className="text-gray-900 dark:text-white group-hover:text-white transition-colors" />
+
+          <div className="hidden md:grid grid-cols-2 gap-4">
+            <div className="space-y-4 translate-y-6">
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-2xl">
+                <Users className="text-indigo-400 mb-4" />
+                <div className="text-2xl font-bold">12.5k</div>
+                <div className="text-[10px] text-slate-500 uppercase tracking-widest">Active Members</div>
+              </div>
+              <div className="bg-indigo-500 p-6 rounded-2xl shadow-lg shadow-indigo-500/20">
+                <Wallet className="text-white mb-4" />
+                <div className="text-2xl font-bold">98%</div>
+                <div className="text-[10px] text-indigo-100 uppercase tracking-widest">Financial Clarity</div>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-2xl">
+                <Sparkles className="text-amber-400 mb-4" />
+                <div className="text-2xl font-bold">4.9/5</div>
+                <div className="text-[10px] text-slate-500 uppercase tracking-widest">Safety Rating</div>
+              </div>
+              <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                <Check className="text-emerald-400 mb-4" />
+                <div className="text-2xl font-bold">Zero</div>
+                <div className="text-[10px] text-slate-500 uppercase tracking-widest">Shadow Debts</div>
+              </div>
             </div>
           </div>
         </div>
       </section>
       
-      {/* Invitations Section */}
+      {/* Invitations Section - Professional Toast Style */}
       <AnimatePresence>
         {invitations.length > 0 && (
           <motion.section 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
             className="space-y-6"
           >
-            <div className="flex items-center justify-between px-2">
-              <div className="flex items-center gap-3 group">
-                <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center text-orange-600 group-hover:rotate-12 transition-transform">
-                  <Bell className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tighter font-display italic">Mời gia nhập</h3>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none">Chưa xử lý ({invitations.length})</p>
-                </div>
-              </div>
+            <div className="flex items-center gap-3 px-2">
+              <div className="w-2 h-8 bg-amber-500 rounded-full" />
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Lời mời chờ xử lý</h3>
             </div>
-            <div className="flex overflow-x-auto gap-6 py-4 no-scrollbar px-2 -mx-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {invitations.map((inv) => {
                 const group = invitingGroups[inv.groupId];
                 return (
                   <motion.div 
                     key={inv.id}
                     layout
-                    className="flex-shrink-0 w-[300px] bg-white dark:bg-gray-900 border-2 border-gray-900 dark:border-white rounded-[32px] p-6 shadow-[8px_8px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_rgba(255,255,255,1)] relative overflow-hidden"
+                    className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm hover:shadow-md transition-all relative overflow-hidden"
                   >
-                    <div className="absolute top-0 right-0 p-3">
-                       <div className="w-3 h-3 bg-orange-500 rounded-full animate-ping" />
-                    </div>
                     <div className="flex items-center gap-4 mb-6">
-                      <div className="w-14 h-14 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center text-orange-500 overflow-hidden shadow-inner shrink-0 rotate-3">
+                      <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden shrink-0">
                         {group?.coverImage ? (
                           <img src={group.coverImage} className="w-full h-full object-cover" alt="" />
                         ) : (
-                          <Users size={24} />
+                          <Users size={20} className="m-auto mt-3.5 text-slate-400" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-black text-gray-900 dark:text-white truncate text-base font-display uppercase italic tracking-tighter leading-tight">{group?.name || '...'}</h4>
-                        <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest mt-1">Từ {inv.inviterEmail?.split('@')[0]}</p>
+                        <h4 className="font-bold text-slate-900 dark:text-white truncate">{group?.name || 'Nhóm đang tải...'}</h4>
+                        <p className="text-[11px] text-slate-500 mt-0.5">Từ: {inv.inviterEmail || 'Thành viên'}</p>
                       </div>
                     </div>
                     <div className="flex gap-3">
                       <button 
                         onClick={() => handleInvitation(inv, 'accept')}
-                        className="flex-[3] bg-blue-600 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all hover:bg-blue-700 active:scale-95 shadow-lg shadow-blue-500/20"
+                        className="flex-1 bg-indigo-600 text-white py-3 rounded-lg text-[11px] font-bold uppercase tracking-wider hover:bg-indigo-700 transition-colors"
                       >
                         Chấp nhận
                       </button>
                       <button 
                         onClick={() => handleInvitation(inv, 'decline')}
-                        className="flex-1 bg-gray-50 dark:bg-gray-800 text-gray-400 py-4 rounded-2xl text-[10px] font-black uppercase transition-all hover:bg-rose-50 hover:text-rose-600"
+                        className="px-4 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-lg hover:bg-red-50 hover:text-red-500 transition-colors"
                       >
-                        <X size={18} className="mx-auto" />
+                        <X size={18} />
                       </button>
                     </div>
                   </motion.div>
@@ -350,18 +353,14 @@ export default function Home() {
       </AnimatePresence>
 
       {/* Featured Groups Section */}
-      <section className="space-y-10">
+      <section className="space-y-8">
         <div className="flex justify-between items-end px-2">
-          <div className="space-y-2">
-            <h3 className="text-5xl font-black text-gray-900 dark:text-white tracking-tighter font-display italic uppercase leading-none">NHÓM CỦA TÔI</h3>
-            <div className="flex items-center gap-3">
-               <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.4em]">SPACE EXPLORER</span>
-               <div className="h-px w-12 bg-gray-200 dark:bg-gray-800" />
-               <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">{orderedGroups.length} Active</p>
-            </div>
+          <div className="space-y-1">
+            <h3 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Danh sách nhóm</h3>
+            <p className="text-xs text-slate-500 font-medium tracking-wide uppercase">Bạn đang tham gia {orderedGroups.length} nhóm hoạt động</p>
           </div>
-          <Link to="/groups" className="w-12 h-12 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-2xl group transition-all active:scale-90 shadow-sm border-2 border-gray-900 dark:border-white">
-             <ChevronRight className="w-6 h-6 text-gray-900 dark:text-white group-hover:translate-x-1 transition-transform" />
+          <Link to="/groups" className="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 hover:underline">
+            Xem tất cả <ChevronRight size={14} />
           </Link>
         </div>
 
@@ -372,97 +371,81 @@ export default function Home() {
             message="Bắt đầu bằng cách tạo một nhóm hoặc tham gia nhóm có sẵn."
           />
         ) : (
-          <Reorder.Group 
-            axis="y" 
-            values={orderedGroups} 
-            onReorder={onReorder}
-            className="space-y-8"
-          >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {orderedGroups.map((group) => {
-              const isPinned = profile?.pinnedGroupIds?.includes(group.id);
+              const isPinned = profile?.pinnedGroupIds?.includes(group.id) || false;
               return (
-                <Reorder.Item
-                  key={group.id}
-                  value={group}
-                  onDragEnd={saveOrder}
-                  className="relative touch-none"
-                  whileDrag={{ scale: 1.02, zIndex: 50 }}
-                >
-                  <div className="absolute top-6 right-6 z-20">
-                    <button
-                      onClick={(e) => handlePinGroup(group.id, e)}
-                      className={cn(
-                        "w-10 h-10 flex items-center justify-center transition-all active:scale-75",
-                        isPinned 
-                          ? "text-blue-600" 
-                          : "text-gray-400 hover:text-blue-600"
-                      )}
-                    >
-                      <Pin size={24} className={cn(isPinned && "fill-blue-600")} />
-                    </button>
-                  </div>
-                  
+                <div key={group.id} className="relative group/item">
                   <Link 
                     to={`/group/${group.id}`}
                     className={cn(
-                      "group block bg-white dark:bg-gray-900 border-2 border-gray-900 dark:border-white rounded-[40px] p-8 shadow-[10px_10px_0px_rgba(0,0,0,1)] dark:shadow-[10px_10px_0px_rgba(255,255,255,1)] hover:translate-y-[-6px] hover:translate-x-[-2px] hover:shadow-[16px_16px_0px_rgba(0,0,0,1)] dark:hover:shadow-[16px_16px_0px_rgba(255,255,255,1)] transition-all duration-300 relative overflow-hidden",
-                      isPinned && "ring-2 ring-blue-500 ring-offset-4 dark:ring-offset-black"
+                      "group block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 relative",
+                      isPinned && "border-indigo-200 dark:border-indigo-900 bg-indigo-50/10"
                     )}
                   >
-                    <div className="flex items-center gap-6 relative z-10">
-                      <div className="flex flex-col items-center gap-1 text-gray-300 dark:text-gray-700">
-                         <GripVertical size={20} />
-                      </div>
-                      
-                      <div className="relative group/avatar">
-                        <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-3xl flex-shrink-0 flex items-center justify-center overflow-hidden border-2 border-gray-900 dark:border-white shadow-xl group-hover:rotate-3 transition-transform duration-500">
+                    <div className="flex items-center gap-5 relative z-10">
+                      <div className="relative shrink-0">
+                        <div className="w-16 h-16 md:w-20 md:h-20 bg-slate-100 dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-inner group-hover:scale-105 transition-transform duration-500">
                           {group.coverImage ? (
-                            <img src={group.coverImage} alt={group.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                            <img src={group.coverImage} alt={group.name} className="w-full h-full object-cover" />
                           ) : (
-                            <Users className="w-10 h-10 text-gray-300 dark:text-gray-700" />
+                            <Users className="w-8 h-8 m-auto mt-4 md:mt-6 text-slate-300 dark:text-slate-600" />
                           )}
                         </div>
                         {group.ownerId === auth.currentUser?.uid && (
-                          <div className="absolute -top-2 -right-2 flex items-center justify-center bg-amber-400 w-8 h-8 rounded-2xl border-2 border-gray-900 dark:border-white shadow-lg rotate-12">
-                            <Crown size={16} className="text-gray-900 fill-gray-900" />
+                          <div className="absolute -top-1 -right-1 bg-amber-400 w-6 h-6 rounded-lg flex items-center justify-center shadow-lg">
+                            <Crown size={12} className="text-amber-900" />
                           </div>
                         )}
                       </div>
                       
-                      <div className="flex-1 min-w-0 text-left">
-                        <div className="flex items-center gap-3 mb-4">
-                           <h4 className="font-black text-gray-900 dark:text-white text-2xl truncate tracking-tight font-display uppercase italic leading-none">{group.name}</h4>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                           <h4 className="font-bold text-slate-900 dark:text-white text-lg truncate group-hover:text-indigo-600 transition-colors">
+                             {group.name}
+                           </h4>
                            <GroupUnreadBadge groupId={group.id} lastReadAt={profile?.lastReadChat?.[group.id]} />
-                           {group.lastAnnoId && (
-                             <div className="w-3 h-3 bg-rose-500 rounded-full animate-ping" />
-                           )}
                         </div>
                         
-                        <div className="flex flex-wrap items-center gap-3">
-                          <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl border-2 border-gray-900 dark:border-white shadow-sm">
-                            <Users className="w-3.5 h-3.5 text-gray-900 dark:text-white" />
-                            <span className="text-[11px] font-black text-gray-900 dark:text-white uppercase tracking-widest">
-                               {group.members?.length || 0} MV
-                            </span>
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-1.5 text-slate-500">
+                            <Users size={14} />
+                            <span className="text-[11px] font-semibold">{group.members?.length || 0} thành viên</span>
                           </div>
                           
-                          {/* Pin badge removed as indicated by user */}
-                          
-                          <div className="flex items-center gap-2 ml-auto">
-                             <div className="flex -space-x-1.5">
-                               {[1, 2, 3].map(i => (
-                                 <div key={i} className="w-6 h-6 rounded-lg border-2 border-gray-900 dark:border-white bg-gray-200 dark:bg-gray-700" />
-                               ))}
-                             </div>
+                          <div className="flex -space-x-2">
+                             {[1, 2, 3].map(i => (
+                               <div key={i} className="w-6 h-6 rounded-full border-2 border-white dark:border-slate-900 bg-slate-200 dark:bg-slate-700" />
+                             ))}
                           </div>
+                        </div>
+                      </div>
+                      
+                      <div className="hidden sm:block">
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-50 dark:bg-slate-800 text-slate-400 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                          <ChevronRight size={20} />
                         </div>
                       </div>
                     </div>
                   </Link>
-                </Reorder.Item>
+                  
+                  {/* Pin Button moved slightly for professional card interaction */}
+                  <button
+                    onClick={(e) => handlePinGroup(group.id, e)}
+                    className={cn(
+                      "absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center rounded-lg transition-all active:scale-75",
+                      isPinned 
+                        ? "text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30" 
+                        : "text-slate-300 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    )}
+                  >
+                    <PinOff size={16} className={cn(!isPinned && "hidden")} />
+                    <Pin size={16} className={cn(isPinned && "hidden")} />
+                  </button>
+                </div>
               );
             })}
-          </Reorder.Group>
+          </div>
         )}
       </section>
     </div>

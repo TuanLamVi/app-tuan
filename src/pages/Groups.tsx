@@ -8,71 +8,71 @@ export default function Groups() {
   const { groups, loading } = useGroups();
 
   return (
-    <div className="p-6 space-y-10 animate-in fade-in slide-in-from-bottom-12 duration-1000">
+    <div className="p-4 md:p-8 space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700">
       <header className="flex justify-between items-end px-2">
-        <div className="space-y-2">
-          <h2 className="text-5xl font-black text-gray-900 dark:text-white tracking-tighter font-display italic uppercase leading-none">VŨ TRỤ</h2>
-          <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.4em]">Khám phá các không gian của bạn</p>
+        <div className="space-y-1">
+          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white tracking-tight">Vũ trụ nhóm</h2>
+          <p className="text-xs text-slate-500 font-medium tracking-wide">Quản trị tất cả không gian làm việc của bạn</p>
         </div>
-        <Link to="/create-group" className="w-14 h-14 flex items-center justify-center bg-gray-900 dark:bg-white text-white dark:text-gray-950 rounded-[18px] shadow-[4px_4px_0px_rgba(37,99,235,1)] active:scale-90 transition-all border-2 border-gray-900 dark:border-white">
-          <Plus size={28} />
+        <Link to="/create-group" className="w-12 h-12 flex items-center justify-center bg-indigo-600 text-white rounded-xl shadow-lg shadow-indigo-500/20 active:scale-95 transition-all">
+          <Plus size={24} />
         </Link>
       </header>
 
-      <div className="relative group">
-        <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
-          <Search className="w-5 h-5 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
+      <div className="relative group/search">
+        <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
+          <Search className="w-5 h-5 text-slate-400 group-focus-within/search:text-indigo-600 transition-colors" />
         </div>
         <input 
           type="text" 
-          placeholder="Tìm kiếm hành tinh..." 
-          className="w-full bg-white dark:bg-black border-2 border-gray-900 dark:border-white rounded-[24px] pl-16 pr-6 py-5 focus:outline-none focus:ring-4 focus:ring-blue-500/20 font-black text-sm text-gray-900 dark:text-white transition-all shadow-[8px_8px_0px_rgba(0,0,0,0.05)] dark:shadow-[8px_8px_0px_rgba(255,255,255,0.05)] placeholder:text-gray-400 dark:placeholder:text-gray-700 uppercase tracking-widest italic"
+          placeholder="Tìm kiếm nhóm..." 
+          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl pl-14 pr-6 py-4 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 font-medium text-slate-900 dark:text-white transition-all shadow-sm placeholder:text-slate-400"
         />
       </div>
 
-      <div className="space-y-8">
+      <div className="space-y-6">
         {loading ? (
           <div className="py-20 flex flex-col items-center gap-4">
-             <div className="w-14 h-14 border-4 border-gray-100 border-t-blue-600 rounded-full animate-spin" />
-             <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Đang khởi tạo...</p>
+             <div className="w-12 h-12 border-3 border-slate-100 border-t-indigo-600 rounded-full animate-spin" />
+             <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Đang khởi tạo...</p>
           </div>
         ) : groups.length === 0 ? (
-          <div className="py-20 text-center space-y-6">
-            <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-[40px] mx-auto flex items-center justify-center rotate-6">
-              <Users className="w-12 h-12 text-gray-300 dark:text-gray-700" />
+          <div className="py-20 text-center space-y-6 bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-slate-100 dark:border-slate-800">
+            <div className="w-20 h-20 bg-white dark:bg-slate-800 rounded-3xl mx-auto flex items-center justify-center shadow-sm">
+              <Users className="w-10 h-10 text-slate-300 dark:text-slate-600" />
             </div>
-            <div className="space-y-4">
-              <h4 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tighter italic font-display">KHÔNG CÓ TÍN HIỆU</h4>
-              <p className="text-[10px] text-gray-400 font-bold max-w-[200px] mx-auto leading-relaxed uppercase tracking-widest">Bắt đầu bằng cách tạo một không gian mới cho nhóm của bạn.</p>
-              <Link to="/create-group" className="inline-flex h-12 px-8 items-center justify-center bg-blue-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-blue-500/30">Tạo ngay</Link>
+            <div className="space-y-2">
+              <h4 className="text-xl font-bold text-slate-900 dark:text-white">Không có dữ liệu</h4>
+              <p className="text-xs text-slate-500 max-w-[200px] mx-auto leading-relaxed">Hãy bắt đầu bằng cách tạo không gian nhóm đầu tiên của bạn.</p>
+              <Link to="/create-group" className="inline-flex h-11 px-8 items-center justify-center bg-indigo-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-indigo-500/20 mt-4 transition-transform active:scale-95">Tạo ngay</Link>
             </div>
           </div>
         ) : (
-          <div className="grid gap-8">
+          <div className="grid gap-6">
             {groups.map(group => (
               <Link 
                 key={group.id} 
                 to={`/group/${group.id}`}
-                className="group bg-white dark:bg-gray-900 p-8 rounded-[40px] flex items-center gap-8 border-2 border-gray-900 dark:border-white shadow-[10px_10px_0px_rgba(0,0,0,1)] dark:shadow-[10px_10px_0px_rgba(255,255,255,1)] hover:translate-y-[-6px] hover:translate-x-[-2px] hover:shadow-[16px_16px_0px_rgba(37,99,235,0.4)] transition-all duration-300"
+                className="group bg-white dark:bg-slate-900 p-6 rounded-2xl flex items-center gap-6 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all duration-300"
               >
-                <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-3xl flex items-center justify-center text-blue-600 overflow-hidden border-2 border-gray-900 dark:border-white shadow-xl rotate-[-3deg] group-hover:rotate-0 transition-transform duration-500">
+                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-700 shadow-inner group-hover:scale-105 transition-transform duration-500 shrink-0">
                   {group.coverImage ? (
                     <img src={group.coverImage} className="w-full h-full object-cover" alt="" />
                   ) : (
-                    <Users size={32} />
+                    <Users size={24} className="text-slate-300" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-black text-gray-900 dark:text-white text-2xl font-display truncate uppercase italic tracking-tighter leading-none mb-3">{group.name}</h4>
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                      <Users className="w-3 h-3 text-gray-900 dark:text-white" />
-                      <p className="text-[9px] text-gray-900 dark:text-white font-black uppercase tracking-widest">{group.members?.length || 0} MV</p>
+                  <h4 className="font-bold text-slate-900 dark:text-white text-lg truncate group-hover:text-indigo-600 transition-colors mb-1">{group.name}</h4>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1.5 text-slate-500">
+                      <Users size={14} />
+                      <p className="text-[11px] font-bold uppercase tracking-tight">{group.members?.length || 0} thành viên</p>
                     </div>
                   </div>
                 </div>
-                <div className="w-12 h-12 flex items-center justify-center bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-[14px] group-hover:bg-blue-600 group-hover:text-white transition-all">
-                   <ChevronRight size={24} />
+                <div className="w-10 h-10 flex items-center justify-center bg-slate-50 dark:bg-slate-800 text-slate-400 rounded-xl group-hover:bg-indigo-600 group-hover:text-white transition-all transform group-hover:translate-x-1">
+                   <ChevronRight size={20} />
                 </div>
               </Link>
             ))}
