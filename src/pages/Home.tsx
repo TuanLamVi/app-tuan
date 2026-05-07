@@ -242,27 +242,43 @@ export default function Home() {
   }
 
   return (
-    <div className="p-4 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Dynamic Hero Section */}
-      <section className="relative overflow-hidden bg-gray-900 rounded-[40px] p-8 text-white shadow-2xl shadow-gray-200">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600 rounded-full blur-[100px] opacity-20 -translate-y-1/2 translate-x-1/2" />
+    <div className="p-6 space-y-12 animate-in fade-in slide-in-from-bottom-12 duration-1000">
+      {/* Hyper-Modern Hero Section */}
+      <section className="relative overflow-hidden bg-white dark:bg-black rounded-[48px] p-10 text-gray-900 dark:text-white border-2 border-gray-900 dark:border-white shadow-[12px_12px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_rgba(255,255,255,1)]">
+        <div className="absolute top-[-10%] right-[-10%] w-[250px] h-[250px] bg-blue-500 rounded-full blur-[80px] opacity-10 animate-pulse" />
+        
         <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-6">
-             <div className="w-8 h-8 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center">
-               <Sparkles size={16} className="text-blue-400" />
+          <div className="flex items-center justify-between mb-12">
+             <div className="flex flex-col">
+               <span className="text-[12px] font-black uppercase tracking-[0.4em] text-blue-600 dark:text-blue-400 leading-none">Smart Hub</span>
+               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Ready for action</span>
              </div>
-             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400">Quản lý nhóm</span>
+             <div className="w-12 h-12 bg-gray-900 dark:bg-white rounded-2xl flex items-center justify-center rotate-3 hover:rotate-0 transition-transform">
+               <Sparkles size={24} className="text-white dark:text-gray-900" />
+             </div>
           </div>
           
-          <h2 className="text-3xl font-black mb-6 tracking-tight italic uppercase">MyGroups</h2>
+          <div className="space-y-4 mb-12">
+            <h2 className="text-6xl font-black tracking-tighter italic uppercase font-display leading-[0.85] animate-in slide-in-from-left duration-700">KẾT NỐI</h2>
+            <div className="flex items-center gap-4">
+              <div className="h-2 w-16 bg-blue-600 rounded-full" />
+              <h2 className="text-6xl font-black tracking-tighter italic uppercase font-display leading-[0.85] text-blue-600 dark:text-blue-400">NHÓM</h2>
+            </div>
+            <h2 className="text-6xl font-black tracking-tighter italic uppercase font-display leading-[0.85] animate-in slide-in-from-left duration-1000 delay-200">BẠN BÈ.</h2>
+          </div>
           
-          <Link 
-            to="/create-group"
-            className="inline-flex items-center gap-3 bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-[20px] text-xs font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-xl shadow-blue-900/20"
-          >
-            <Plus className="w-4 h-4" />
-            Tạo nhóm mới
-          </Link>
+          <div className="flex gap-4">
+            <Link 
+              to="/create-group"
+              className="group/btn flex-[2] flex items-center justify-center gap-3 bg-gray-900 dark:bg-white text-white dark:text-gray-950 px-8 py-5 rounded-[24px] text-[11px] font-black uppercase tracking-[0.2em] transition-all hover:translate-y-[-4px] active:scale-95 shadow-xl"
+            >
+              <Plus className="w-5 h-5 group-hover/btn:rotate-90 transition-transform duration-500" />
+              Bắt đầu ngay
+            </Link>
+            <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-[24px] flex items-center justify-center hover:bg-blue-600 dark:hover:bg-blue-500 group transition-all cursor-pointer active:scale-90">
+              <LayoutGrid size={28} className="text-gray-900 dark:text-white group-hover:text-white transition-colors" />
+            </div>
+          </div>
         </div>
       </section>
       
@@ -270,52 +286,60 @@ export default function Home() {
       <AnimatePresence>
         {invitations.length > 0 && (
           <motion.section 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="space-y-4"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className="space-y-6"
           >
-            <div className="flex items-center gap-2 px-4">
-              <Bell className="text-orange-500" size={18} />
-              <h3 className="text-sm font-black text-gray-900 uppercase tracking-wider">Lời mời mới ({invitations.length})</h3>
+            <div className="flex items-center justify-between px-2">
+              <div className="flex items-center gap-3 group">
+                <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center text-orange-600 group-hover:rotate-12 transition-transform">
+                  <Bell className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tighter font-display italic">Mời gia nhập</h3>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none">Chưa xử lý ({invitations.length})</p>
+                </div>
+              </div>
             </div>
-            <div className="space-y-3">
+            <div className="flex overflow-x-auto gap-6 py-4 no-scrollbar px-2 -mx-2">
               {invitations.map((inv) => {
                 const group = invitingGroups[inv.groupId];
                 return (
                   <motion.div 
                     key={inv.id}
                     layout
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="bg-orange-50/50 border border-orange-100 rounded-[32px] p-5 flex items-center justify-between gap-4"
+                    className="flex-shrink-0 w-[300px] bg-white dark:bg-gray-900 border-2 border-gray-900 dark:border-white rounded-[32px] p-6 shadow-[8px_8px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_rgba(255,255,255,1)] relative overflow-hidden"
                   >
-                    <div className="flex items-center gap-4 flex-1 min-w-0">
-                      <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-orange-500 shadow-sm flex-shrink-0">
+                    <div className="absolute top-0 right-0 p-3">
+                       <div className="w-3 h-3 bg-orange-500 rounded-full animate-ping" />
+                    </div>
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-14 h-14 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center text-orange-500 overflow-hidden shadow-inner shrink-0 rotate-3">
                         {group?.coverImage ? (
-                          <img src={group.coverImage} className="w-full h-full object-cover rounded-2xl" alt="" />
+                          <img src={group.coverImage} className="w-full h-full object-cover" alt="" />
                         ) : (
                           <Users size={24} />
                         )}
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-gray-500 mb-0.5">Lời mời vào nhóm</p>
-                        <h4 className="font-black text-gray-900 truncate tracking-tight">{group?.name || 'Đang tải...'}</h4>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-black text-gray-900 dark:text-white truncate text-base font-display uppercase italic tracking-tighter leading-tight">{group?.name || '...'}</h4>
+                        <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest mt-1">Từ {inv.inviterEmail?.split('@')[0]}</p>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                       <button 
-                        onClick={() => handleInvitation(inv, 'decline')}
-                        className="p-3 bg-white text-gray-400 hover:text-red-500 rounded-2xl shadow-sm transition-colors"
-                       >
-                         <X size={18} />
-                       </button>
-                       <button 
+                    <div className="flex gap-3">
+                      <button 
                         onClick={() => handleInvitation(inv, 'accept')}
-                        className="p-3 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl shadow-lg shadow-blue-200 transition-all active:scale-95"
-                       >
-                         <Check size={18} />
-                       </button>
+                        className="flex-[3] bg-blue-600 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all hover:bg-blue-700 active:scale-95 shadow-lg shadow-blue-500/20"
+                      >
+                        Chấp nhận
+                      </button>
+                      <button 
+                        onClick={() => handleInvitation(inv, 'decline')}
+                        className="flex-1 bg-gray-50 dark:bg-gray-800 text-gray-400 py-4 rounded-2xl text-[10px] font-black uppercase transition-all hover:bg-rose-50 hover:text-rose-600"
+                      >
+                        <X size={18} className="mx-auto" />
+                      </button>
                     </div>
                   </motion.div>
                 );
@@ -326,13 +350,19 @@ export default function Home() {
       </AnimatePresence>
 
       {/* Featured Groups Section */}
-      <section>
-        <div className="flex justify-between items-end mb-6 px-4">
-          <div>
-            <h3 className="text-xl font-black text-gray-900 tracking-tight">Nhóm của bạn</h3>
-            <p className="text-xs text-gray-400 font-medium">{orderedGroups.length} nhóm đang hoạt động</p>
+      <section className="space-y-10">
+        <div className="flex justify-between items-end px-2">
+          <div className="space-y-2">
+            <h3 className="text-5xl font-black text-gray-900 dark:text-white tracking-tighter font-display italic uppercase leading-none">NHÓM CỦA TÔI</h3>
+            <div className="flex items-center gap-3">
+               <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.4em]">SPACE EXPLORER</span>
+               <div className="h-px w-12 bg-gray-200 dark:bg-gray-800" />
+               <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">{orderedGroups.length} Active</p>
+            </div>
           </div>
-          <Link to="/groups" className="text-blue-600 text-[10px] font-black uppercase tracking-widest hover:underline">Tất cả</Link>
+          <Link to="/groups" className="w-12 h-12 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-2xl group transition-all active:scale-90 shadow-sm border-2 border-gray-900 dark:border-white">
+             <ChevronRight className="w-6 h-6 text-gray-900 dark:text-white group-hover:translate-x-1 transition-transform" />
+          </Link>
         </div>
 
         {orderedGroups.length === 0 ? (
@@ -346,7 +376,7 @@ export default function Home() {
             axis="y" 
             values={orderedGroups} 
             onReorder={onReorder}
-            className="grid gap-4"
+            className="space-y-8"
           >
             {orderedGroups.map((group) => {
               const isPinned = profile?.pinnedGroupIds?.includes(group.id);
@@ -360,57 +390,60 @@ export default function Home() {
                   <Link 
                     to={`/group/${group.id}`}
                     className={cn(
-                      "group bg-white p-6 rounded-[32px] flex items-center gap-5 border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-gray-100 transition-all active:scale-[0.98]",
-                      isPinned && "border-blue-100 bg-blue-50/10 shadow-blue-50"
+                      "group block bg-white dark:bg-gray-900 border-2 border-gray-900 dark:border-white rounded-[40px] p-8 shadow-[10px_10px_0px_rgba(0,0,0,1)] dark:shadow-[10px_10px_0px_rgba(255,255,255,1)] hover:translate-y-[-6px] hover:translate-x-[-2px] hover:shadow-[16px_16px_0px_rgba(0,0,0,1)] dark:hover:shadow-[16px_16px_0px_rgba(255,255,255,1)] transition-all duration-300 relative overflow-hidden",
+                      isPinned && "ring-2 ring-blue-500 ring-offset-4 dark:ring-offset-black"
                     )}
                   >
-                    <div className="absolute top-4 right-4 flex items-center gap-1 z-10">
-                      <button 
-                        onClick={(e) => handlePinGroup(group.id, e)}
-                        className={cn(
-                          "p-2 rounded-full transition-all",
-                          isPinned ? "text-blue-600 bg-blue-50" : "text-gray-300 hover:text-gray-400 hover:bg-gray-50"
-                        )}
-                      >
-                        {isPinned ? <Pin size={16} fill="currentColor" /> : <Pin size={16} />}
-                      </button>
-                      <div className="p-2 text-gray-200 cursor-grab active:cursor-grabbing">
-                        <GripVertical size={16} />
-                      </div>
-                    </div>
-
-                    <div className="w-20 h-20 bg-gray-50 rounded-[24px] flex-shrink-0 flex items-center justify-center overflow-hidden border-4 border-white shadow-inner group-hover:scale-110 transition-transform">
-                      {group.coverImage ? (
-                        <img src={group.coverImage} alt={group.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <Users className="w-10 h-10 text-gray-300" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0 pr-4 text-left">
-                      <div className="flex items-center gap-2 mb-1">
-                         <h4 className="font-black text-gray-900 text-lg truncate tracking-tight">{group.name}</h4>
-                         {group.lastAnnoId && (
-                           <div className="w-2 h-2 bg-red-500 rounded-full animate-ping" />
-                         )}
-                         {group.ownerId === auth.currentUser?.uid && (
-                           <div className="flex items-center justify-center bg-amber-50 dark:bg-amber-900/20 w-5 h-5 rounded-full border border-amber-100 dark:border-amber-800 shadow-sm">
-                             <Crown size={10} className="text-amber-500 fill-amber-500" />
-                           </div>
-                         )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 bg-blue-50 rounded-lg flex items-center justify-center">
-                          <Users className="w-3 h-3 text-blue-600" />
+                    <div className="flex items-center gap-8 relative z-10">
+                      <div className="relative">
+                        <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-3xl flex-shrink-0 flex items-center justify-center overflow-hidden border-2 border-gray-900 dark:border-white shadow-xl group-hover:rotate-3 transition-transform duration-500">
+                          {group.coverImage ? (
+                            <img src={group.coverImage} alt={group.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                          ) : (
+                            <Users className="w-10 h-10 text-gray-300 dark:text-gray-700" />
+                          )}
                         </div>
-                        <span className="text-sm font-black text-gray-500">
-                           {group.members?.length || 0} thành viên
-                        </span>
+                        {group.ownerId === auth.currentUser?.uid && (
+                          <div className="absolute -top-2 -right-2 flex items-center justify-center bg-amber-400 w-8 h-8 rounded-2xl border-2 border-gray-900 dark:border-white shadow-lg rotate-12">
+                            <Crown size={16} className="text-gray-900 fill-gray-900" />
+                          </div>
+                        )}
+                        <div className="absolute -bottom-2 -right-2 bg-white dark:bg-gray-900 rounded-2xl p-1 shadow-lg ring-1 ring-gray-900 dark:ring-white">
+                           <GroupUnreadBadge groupId={group.id} lastReadAt={profile?.lastReadChat?.[group.id]} />
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex flex-col items-center gap-2">
-                      <GroupUnreadBadge groupId={group.id} lastReadAt={profile?.lastReadChat?.[group.id]} />
-                      <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-300 group-hover:bg-blue-600 group-hover:text-white transition-all">
-                        <ChevronRight className="w-6 h-6" />
+                      
+                      <div className="flex-1 min-w-0 text-left">
+                        <div className="flex items-center gap-3 mb-4">
+                           <h4 className="font-black text-gray-900 dark:text-white text-2xl truncate tracking-tight font-display uppercase italic leading-none">{group.name}</h4>
+                           {group.lastAnnoId && (
+                             <div className="w-3 h-3 bg-rose-500 rounded-full animate-ping" />
+                           )}
+                        </div>
+                        
+                        <div className="flex flex-wrap items-center gap-3">
+                          <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-gray-800 rounded-xl border-2 border-gray-900 dark:border-white shadow-sm">
+                            <Users className="w-3.5 h-3.5 text-gray-900 dark:text-white" />
+                            <span className="text-[11px] font-black text-gray-900 dark:text-white uppercase tracking-widest">
+                               {group.members?.length || 0} MV
+                            </span>
+                          </div>
+                          
+                          {isPinned && (
+                            <div className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/20">
+                              <Pin size={12} className="fill-white" />
+                              <span className="text-[11px] font-black uppercase tracking-widest">Pin</span>
+                            </div>
+                          )}
+                          
+                          <div className="flex items-center gap-2 ml-auto">
+                             <div className="flex -space-x-1.5">
+                               {[1, 2, 3].map(i => (
+                                 <div key={i} className="w-6 h-6 rounded-lg border-2 border-gray-900 dark:border-white bg-gray-200 dark:bg-gray-700" />
+                               ))}
+                             </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </Link>

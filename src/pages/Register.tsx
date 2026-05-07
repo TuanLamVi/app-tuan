@@ -121,6 +121,7 @@ export default function Register() {
         <Input 
           icon={<Key className="w-5 h-5 text-gray-400" />}
           label="Mã PIN (Dùng để xác thực giao dịch)"
+          labelStyle={{ color: '#b2c1de' }}
           name="pin"
           type="number"
           placeholder="1234"
@@ -163,10 +164,13 @@ export default function Register() {
   );
 }
 
-function Input({ icon, label, ...props }: any) {
+function Input({ icon, label, labelStyle, ...props }: any) {
   return (
     <div className="space-y-2">
-      <label className="text-[10px] font-bold uppercase text-gray-400 tracking-wider ml-1">
+      <label 
+        className="text-[10px] font-bold uppercase text-gray-400 tracking-wider ml-1"
+        style={labelStyle}
+      >
         {label}
       </label>
       <div className="relative group">

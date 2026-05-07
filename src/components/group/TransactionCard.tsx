@@ -198,91 +198,99 @@ export const TransactionCard: React.FC<TransactionCardProps> = ({ transaction, g
 
   return (
     <div className={cn(
-      "bg-white dark:bg-gray-800 rounded-3xl border p-4 flex gap-4 transition-all hover:bg-gray-50/50 dark:hover:bg-gray-700/50",
-      isPending ? "border-orange-100 dark:border-orange-900/30" : "border-gray-100 dark:border-gray-700 shadow-sm"
+      "bg-white dark:bg-gray-900 rounded-[32px] border p-6 flex gap-5 transition-all hover:shadow-lg",
+      isPending ? "border-orange-200 dark:border-orange-800 bg-orange-50/20 shadow-sm" : "border-gray-100 dark:border-gray-800 shadow-sm"
     )}>
       <div 
         onClick={() => setShowComments(!showComments)}
         className={cn(
-          "w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 cursor-pointer transition-transform active:scale-95",
-          transaction.type === 'income' ? "bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400" : "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400"
+          "w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 cursor-pointer transition-transform active:scale-95 shadow-sm group",
+          transaction.type === 'income' 
+            ? "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400" 
+            : "bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400"
         )}
       >
-        {transaction.type === 'income' ? <ArrowUpCircle size={24} /> : <ArrowDownCircle size={24} />}
+        {transaction.type === 'income' ? <ArrowUpCircle size={30} className="group-hover:scale-110 transition-transform" /> : <ArrowDownCircle size={30} className="group-hover:scale-110 transition-transform" />}
       </div>
 
       <div className="flex-1 min-w-0">
         <div 
           onClick={() => setShowComments(!showComments)}
-          className="cursor-pointer group/content"
+          className="cursor-pointer group/content mb-4"
         >
-          <div className="flex justify-between items-start mb-1">
-            <h5 className="font-bold text-gray-900 dark:text-white truncate pr-2 group-hover/content:text-blue-600 transition-colors">{transaction.category}</h5>
+          <div className="flex justify-between items-start mb-2">
+            <h5 className="font-black text-lg text-gray-900 dark:text-white truncate font-display tracking-tight group-hover/content:text-blue-600 transition-colors uppercase italic">{transaction.category}</h5>
             <span className={cn(
-              "font-black text-sm",
-              transaction.type === 'income' ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+              "font-black text-lg font-display tabular-nums tracking-tight",
+              transaction.type === 'income' ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
             )}>
               {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
             </span>
           </div>
 
-          <div className="flex flex-wrap gap-2 mb-2">
+          <div className="flex flex-wrap gap-2 mb-3">
             {campaign && (
-              <span className="flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[8px] font-black uppercase px-2 py-0.5 rounded-lg tracking-wider">
+              <span className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[9px] font-black uppercase px-2.5 py-1 rounded-xl tracking-widest border border-blue-100 dark:border-blue-800">
                 <Tag size={10} /> {campaign.name}
               </span>
             )}
             {isPending && (
-               <span className="bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-[8px] font-black uppercase px-2 py-0.5 rounded-lg tracking-wider flex items-center gap-1">
-                 <Clock size={10} /> Đang chờ duyệt
-               </span>
-            )}
-            {transaction.status === 'rejected' && (
-               <span className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[8px] font-black uppercase px-2 py-0.5 rounded-lg tracking-wider">Từ chối</span>
+               <div className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-[9px] font-black uppercase px-2.5 py-1 rounded-xl tracking-widest border border-orange-100 dark:border-orange-800">
+                 <div className="w-1 h-1 bg-orange-500 rounded-full animate-ping" />
+                 <span>Đang chờ duyệt</span>
+               </div>
             )}
           </div>
 
           {transaction.description && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 line-clamp-2 leading-relaxed">
-              {transaction.description}
+            <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed font-medium italic">
+              "{transaction.description}"
             </p>
           )}
         </div>
 
-        <div className="flex items-center justify-between pt-1">
+        <div className="flex items-center justify-between pt-4 border-t border-gray-50 dark:border-gray-800">
           <div 
             onClick={() => setShowComments(!showComments)}
-            className="flex items-center gap-2 cursor-pointer"
+            className="flex items-center gap-3 cursor-pointer group/creator"
           >
-            <div className="w-5 h-5 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center overflow-hidden">
-               {creator?.photoURL ? <img src={creator.photoURL} alt="" referrerPolicy="no-referrer" /> : <User size={10} className="text-gray-400 dark:text-gray-500" />}
+            <div className="w-8 h-8 bg-gray-50 dark:bg-gray-800 rounded-xl flex items-center justify-center overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm group-hover/creator:scale-105 transition-transform">
+               {creator?.photoURL ? (
+                 <img src={creator.photoURL} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
+               ) : (
+                 <User size={14} className="text-gray-400" />
+               )}
             </div>
-            <span className="text-[10px] text-gray-400 dark:text-gray-500 font-bold">{creator?.displayName || 'Thành viên'}</span>
-            <span className="w-1 h-1 bg-gray-200 dark:bg-gray-700 rounded-full" />
-            <span className="text-[10px] text-gray-400 dark:text-gray-500 font-bold">{formatDate(transaction.createdAt)}</span>
+            <div className="flex flex-col">
+              <span className="text-[10px] text-gray-900 dark:text-white font-black uppercase tracking-widest leading-none">{creator?.displayName || 'Thành viên'}</span>
+              <span className="text-[9px] text-gray-400 font-bold uppercase tracking-tight mt-1">{formatDate(transaction.createdAt)}</span>
+            </div>
           </div>
           
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             {isAdmin && isPending ? (
-              <div className="flex gap-2">
+              <div className="flex gap-1.5">
                 <button 
                   onClick={handleReject}
-                  className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                  className="w-10 h-10 flex items-center justify-center bg-rose-50 dark:bg-rose-900/20 text-rose-600 hover:bg-rose-100 transition-all rounded-xl active:scale-95"
                   title="Từ chối"
                 >
-                  <XCircle size={18} />
+                  <XCircle size={20} />
                 </button>
                 <button 
                   onClick={handleApprove}
-                  className="p-1.5 text-green-600 hover:scale-110 active:scale-95 transition-all"
+                  className="w-10 h-10 flex items-center justify-center bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 hover:bg-emerald-100 hover:scale-105 active:scale-95 transition-all rounded-xl shadow-sm"
                   title="Duyệt"
                 >
-                  <CheckCircle2 size={18} />
+                  <CheckCircle2 size={20} />
                 </button>
               </div>
             ) : isAdmin && (
-              <button onClick={handleDelete} className="p-1.5 text-gray-300 hover:text-red-500 transition-colors">
-                <Trash2 size={16} />
+              <button 
+                onClick={handleDelete} 
+                className="w-10 h-10 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
+              >
+                <Trash2 size={18} />
               </button>
             )}
           </div>

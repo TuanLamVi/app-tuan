@@ -31,27 +31,31 @@ export const CampaignCard: React.FC<CampaignCardProps> = ({ campaign, group, isA
 
   return (
     <div className={cn(
-      "bg-white rounded-3xl border p-5 transition-all",
-      isClosed ? "border-gray-100 opacity-80" : "border-gray-100 shadow-sm hover:shadow-md"
+      "bg-white dark:bg-gray-900 rounded-[32px] border p-6 transition-all relative overflow-hidden group",
+      isClosed ? "border-gray-100 dark:border-gray-800 opacity-60" : "border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl hover:-translate-y-1"
     )}>
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex items-center gap-3">
+      {!isClosed && (
+        <div className="absolute -top-12 -right-12 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl group-hover:bg-blue-500/10 transition-all" />
+      )}
+      
+      <div className="flex justify-between items-start mb-6 relative z-10">
+        <div className="flex items-center gap-4">
           <div className={cn(
-            "w-10 h-10 rounded-xl flex items-center justify-center",
-            isClosed ? "bg-gray-100 text-gray-400" : "bg-blue-50 text-blue-600"
+            "w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm",
+            isClosed ? "bg-gray-100 text-gray-400" : "bg-gradient-to-br from-blue-500 to-indigo-600 text-white"
           )}>
-            <Flag size={20} />
+            <Flag size={24} />
           </div>
           <div>
-            <h4 className="font-bold text-gray-900">{campaign.name}</h4>
-            <div className="flex items-center gap-2">
+            <h4 className="text-lg font-black text-gray-900 dark:text-white font-display tracking-tight leading-tight uppercase italic">{campaign.name}</h4>
+            <div className="flex items-center gap-2 mt-1">
                <span className={cn(
-                 "text-[8px] font-black uppercase px-2 py-0.5 rounded-lg tracking-wider",
-                 isClosed ? "bg-gray-100 text-gray-400" : "bg-green-100 text-green-600"
+                 "text-[9px] font-black uppercase px-2 py-0.5 rounded-lg tracking-widest border",
+                 isClosed ? "bg-gray-100 text-gray-400 border-gray-200" : "bg-emerald-50 text-emerald-600 border-emerald-100"
                )}>
-                 {isClosed ? 'Đã đóng' : 'Đang hoạt động'}
+                 {isClosed ? 'Đã chốt' : 'Hoạt động'}
                </span>
-               <span className="text-[10px] text-gray-400 font-bold">{formatDate(campaign.createdAt)}</span>
+               <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{formatDate(campaign.createdAt)}</span>
             </div>
           </div>
         </div>
@@ -59,41 +63,46 @@ export const CampaignCard: React.FC<CampaignCardProps> = ({ campaign, group, isA
         {isAdmin && !isClosed && (
           <button 
             onClick={handleSettle}
-            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+            className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-xl transition-all shadow-sm active:scale-95"
             title="Hoàn tất sự kiện"
           >
-            <CheckCircle size={18} />
+            <CheckCircle size={20} />
           </button>
         )}
       </div>
 
       {campaign.description && (
-        <p className="text-xs text-gray-500 mb-4 line-clamp-2">{campaign.description}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 line-clamp-2 leading-relaxed italic">"{campaign.description}"</p>
       )}
 
-      <div className="space-y-4">
-        <div className="bg-gray-50 rounded-2xl p-4 flex items-center justify-between">
+      <div className="space-y-6 relative z-10">
+        <div className="bg-gray-50/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-[24px] p-5 flex items-center justify-between border border-gray-100 dark:border-gray-800">
           <div>
-            <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest leading-none mb-1">
+            <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest leading-none mb-2">
               {isClosed ? 'Số tiền chốt' : 'Số dư hiện tại'}
             </p>
-            <p className="font-black text-gray-900">{formatCurrency(isClosed ? (campaign.settledBalance ?? campaign.balance) : campaign.balance)}</p>
+            <p className="text-xl font-black text-gray-900 dark:text-white font-display tabular-nums tracking-tight">
+              {formatCurrency(isClosed ? (campaign.settledBalance ?? campaign.balance) : campaign.balance)}
+            </p>
           </div>
           <div className="text-right">
-             <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest leading-none mb-1">Mục tiêu</p>
-             <p className="font-bold text-gray-400">{campaign.targetAmount ? formatCurrency(campaign.targetAmount) : '--'}</p>
+             <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest leading-none mb-2">Mục tiêu</p>
+             <p className="font-bold text-gray-400 dark:text-gray-600 tabular-nums">{campaign.targetAmount ? formatCurrency(campaign.targetAmount) : '--'}</p>
           </div>
         </div>
 
         {campaign.targetAmount && !isClosed && (
-          <div className="space-y-1.5 px-1">
-            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
-              <span className="text-blue-600">Tiến độ</span>
-              <span className="text-gray-400">{Math.round(progress)}%</span>
+          <div className="space-y-2.5">
+            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+              <div className="flex items-center gap-1.5 text-blue-600">
+                <Target size={12} />
+                <span>Tiến độ mục tiêu</span>
+              </div>
+              <span className="text-gray-400 font-display tabular-nums">{Math.round(progress)}%</span>
             </div>
-            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden shadow-inner p-0.5">
                <div 
-                 className="h-full bg-blue-600 rounded-full transition-all duration-1000"
+                 className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full transition-all duration-1000 shadow-sm"
                  style={{ width: `${Math.min(progress, 100)}%` }}
                />
             </div>
@@ -102,9 +111,9 @@ export const CampaignCard: React.FC<CampaignCardProps> = ({ campaign, group, isA
       </div>
 
       {isClosed && (
-        <div className="mt-4 pt-4 border-t border-gray-50 flex items-center gap-2 text-gray-400">
-           <AlertCircle size={14} />
-           <p className="text-[10px] font-bold">Số tiền này hiện đã thuộc về số dư chung của nhóm.</p>
+        <div className="mt-6 pt-5 border-t border-gray-100 dark:border-gray-800 flex items-center gap-3 text-gray-400">
+           <AlertCircle size={16} />
+           <p className="text-[10px] font-black uppercase tracking-widest leading-tight">Sự kiện đã hoàn tất. Số dư đã được quy về quỹ chung.</p>
         </div>
       )}
     </div>

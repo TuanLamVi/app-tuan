@@ -164,31 +164,43 @@ export default function AnnouncementCard({
     const isNew = announcement.createdAt && (new Date().getTime() - announcement.createdAt.getTime() < 24 * 60 * 60 * 1000);
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-[32px] border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden mb-4 relative transition-colors">
+    <div className="bg-white dark:bg-gray-900 rounded-[32px] border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden mb-4 relative transition-all hover:shadow-md">
       {isNew && (
-        <div className="absolute top-4 right-12 z-10">
-          <span className="bg-red-500 text-white text-[8px] font-black uppercase px-2 py-1 rounded-full tracking-tighter shadow-sm animate-pulse">Mới</span>
+        <div className="absolute top-6 right-6 z-10">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-red-500 rounded-full shadow-lg shadow-red-500/20">
+            <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+            <span className="text-white text-[8px] font-black uppercase tracking-tight">Mới</span>
+          </div>
         </div>
       )}
-      <div className="p-5">
+      <div className="p-6">
         {/* Header */}
-        <div className="flex justify-between items-start mb-4">
+        <div className="flex justify-between items-start mb-6">
           <div 
             onClick={() => setShowComments(!showComments)}
-            className="flex items-center gap-3 cursor-pointer group"
+            className="flex items-center gap-4 cursor-pointer group"
           >
-            <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center overflow-hidden border border-white dark:border-gray-800 shadow-sm transition-transform group-active:scale-95">
-              {creator?.photoURL ? <img src={creator.photoURL} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" /> : <ThumbsUp className="text-blue-600 dark:text-blue-400" size={18} />}
+            <div className="w-12 h-12 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center justify-center overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm transition-transform group-hover:scale-105 group-active:scale-95">
+              {creator?.photoURL ? (
+                <img src={creator.photoURL} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-black text-xl">
+                  {creator?.displayName?.charAt(0) || 'A'}
+                </div>
+              )}
             </div>
             <div>
-              <h5 className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">{creator?.displayName || 'Người quản lý'}</h5>
-              <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">
+              <h5 className="text-base font-black text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors font-display tracking-tight">{creator?.displayName || 'Người quản lý'}</h5>
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 font-black uppercase tracking-widest leading-none mt-1">
                 {formatTimestamp(announcement.createdAt)}
               </p>
             </div>
           </div>
           {isOwnerOrDeputy && (
-            <button onClick={handleDelete} className="p-2 text-gray-300 hover:text-red-500 transition-colors">
+            <button 
+              onClick={handleDelete} 
+              className="w-10 h-10 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-all"
+            >
               <Trash2 size={18} />
             </button>
           )}
@@ -197,77 +209,78 @@ export default function AnnouncementCard({
         {/* Content - Click to toggle comments */}
         <div 
           onClick={() => setShowComments(!showComments)}
-          className="cursor-pointer group"
+          className="cursor-pointer group mb-6"
         >
-          <h4 className="font-black text-gray-900 dark:text-white mb-2 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+          <h4 className="text-xl font-black text-gray-900 dark:text-white mb-3 leading-tight font-display tracking-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
             {announcement.title}
           </h4>
-          <p className="text-sm text-gray-600 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">{announcement.content}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{announcement.content}</p>
         </div>
 
-        {/* Stats */}
-        {(totalReactions > 0 || (announcement.comments?.length || 0) > 0) && (
-          <div 
-            onClick={() => setShowComments(!showComments)}
-            className="flex items-center justify-between mt-4 pb-4 border-b border-gray-50 dark:border-gray-800 text-[11px] font-bold text-gray-400 dark:text-gray-500 cursor-pointer hover:text-gray-600 transition-colors"
-          >
-            <div className="flex items-center gap-1">
-              <div className="flex -space-x-1 items-center">
-                {Object.keys(announcement.reactions || {}).slice(0, 3).map(emoji => (
-                  <span key={emoji} className="text-[12px]">
-                    {emoji}
-                  </span>
-                ))}
-              </div>
-              <span className="ml-1 opacity-70">{totalReactions}</span>
-            </div>
-            <span className="opacity-70">{announcement.comments?.length || 0} bình luận</span>
-          </div>
-        )}
+        {/* Stats & Interactivity */}
+        <div className="flex items-center justify-between pt-6 border-t border-gray-50 dark:border-gray-800">
+          <div className="flex items-center gap-4">
+            <div className="relative group/react">
+              <button 
+                onMouseEnter={() => setShowReactions(true)}
+                onClick={() => userReaction ? handleReaction(userReaction) : handleReaction('👍')}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all",
+                  userReaction 
+                    ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" 
+                    : "bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                )}
+              >
+                <span className="text-lg leading-none">{userReaction || <ThumbsUp size={14} />}</span>
+                <span>{totalReactions || 'Tương tác'}</span>
+              </button>
 
-        {/* Actions */}
-        <div className="flex gap-2 mt-2 relative">
-          <div className="relative flex-1">
+              <AnimatePresence>
+                {showReactions && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    onMouseLeave={() => setShowReactions(false)}
+                    className="absolute bottom-full left-0 mb-3 bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-700 p-2 flex gap-2 z-40"
+                  >
+                    {REACTIONS.map((r) => (
+                      <button 
+                        key={r.emoji}
+                        onClick={() => handleReaction(r.emoji)}
+                        className="w-10 h-10 flex items-center justify-center text-2xl hover:scale-125 transition-transform active:scale-95 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-2xl"
+                      >
+                        {r.emoji}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             <button 
-              onMouseEnter={() => setShowReactions(true)}
-              onClick={() => userReaction ? handleReaction(userReaction) : handleReaction('👍')}
+              onClick={() => setShowComments(!showComments)}
               className={cn(
-                "w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl transition-all font-bold text-xs",
-                userReaction ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"
+                "flex items-center gap-2 px-4 py-2 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all",
+                (announcement.comments?.length || 0) > 0
+                  ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400"
+                  : "text-gray-400 hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
               )}
             >
-              <span className="text-base">{userReaction || <ThumbsUp size={16} />}</span>
+              <MessageSquare size={14} />
+              <span>{announcement.comments?.length || 0}</span>
             </button>
-
-            <AnimatePresence>
-              {showReactions && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10, scale: 0.8 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  onMouseLeave={() => setShowReactions(false)}
-                  className="absolute bottom-full left-0 mb-2 bg-white rounded-full shadow-xl border border-gray-100 flex p-1.5 gap-1.5 z-40"
-                >
-                  {REACTIONS.map((r) => (
-                    <button 
-                      key={r.emoji}
-                      onClick={() => handleReaction(r.emoji)}
-                      className="w-10 h-10 flex items-center justify-center text-2xl hover:scale-125 transition-transform active:scale-90"
-                    >
-                      {r.emoji}
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
           </div>
-
-            <button 
-            onClick={() => setShowComments(!showComments)}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all font-bold text-xs text-gray-500 dark:text-gray-400"
-          >
-            <MessageSquare size={16} />
-          </button>
+          
+          {totalReactions > 0 && (
+            <div className="flex -space-x-1.5 overflow-hidden">
+               {Object.keys(announcement.reactions || {}).slice(0, 3).map(emoji => (
+                 <div key={emoji} className="w-6 h-6 rounded-full bg-white dark:bg-gray-800 border-2 border-white dark:border-gray-900 flex items-center justify-center text-[10px] shadow-sm">
+                   {emoji}
+                 </div>
+               ))}
+            </div>
+          )}
         </div>
       </div>
 

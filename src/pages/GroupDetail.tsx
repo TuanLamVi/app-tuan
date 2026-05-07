@@ -543,70 +543,69 @@ export default function GroupDetail() {
       </AnimatePresence>
 
       {/* Fixed Sticky Header */}
-      <div className="bg-white dark:bg-gray-900 px-4 pt-10 pb-4 rounded-b-[40px] shadow-sm sticky top-0 z-30 border-b border-gray-100 dark:border-gray-800 transition-colors">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <button onClick={() => navigate('/')} className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-              <ArrowLeft className="w-6 h-6 dark:text-white" />
+      <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl px-6 pt-10 pb-4 rounded-b-[40px] shadow-sm sticky top-0 z-30 border-b border-gray-100 dark:border-gray-800 transition-all">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <button onClick={() => navigate('/')} className="w-10 h-10 flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-gray-800 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all active:scale-95">
+              <ArrowLeft className="w-5 h-5 dark:text-white" />
             </button>
             <div className="min-w-0">
                <div className="flex items-center gap-2">
-                 <h1 className="font-black text-xl italic uppercase tracking-tighter truncate dark:text-white" style={{ color: '#f7a24d', width: '301.25px' }}>{group.name}</h1>
-                 {isOwner ? (
-                   <div className="flex-shrink-0 flex items-center bg-amber-50 dark:bg-amber-900/30 px-1.5 py-1 rounded-full border border-amber-100 dark:border-amber-800 shadow-sm">
-                     <Crown size={7} className="text-amber-500 fill-amber-500" />
-
+                 <h1 className="font-black text-xl italic uppercase tracking-tighter truncate dark:text-white font-display" style={{ color: '#f7a24d' }}>{group.name}</h1>
+                 {isOwner && (
+                   <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center bg-amber-400 rounded-lg shadow-sm rotate-12">
+                     <Crown size={10} className="text-white fill-white" />
                    </div>
-                 ) : isDeputy ? (
-                   <span className="flex-shrink-0 text-[8px] font-black uppercase text-blue-600 tracking-widest bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-800">Phó nhóm</span>
-                 ) : null}
+                 )}
                </div>
+               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mt-1">{group.members?.length || 0} Thành viên</p>
             </div>
           </div>
           <div className="flex gap-2">
             <button 
               onClick={handleRefresh}
               className={cn(
-                "p-2 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-all",
+                "w-10 h-10 flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-gray-400 hover:text-blue-600 transition-all active:scale-95",
                 isRefreshing && "animate-spin text-blue-600"
               )}
             >
-              <RefreshCcw size={18} />
+              <RefreshCcw size={16} />
             </button>
             <button 
               onClick={() => setIsSettingsModalOpen(true)}
-              className="p-2 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+              className="w-10 h-10 flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-gray-400 hover:text-blue-600 transition-all active:scale-95"
             >
-              <Settings size={18} />
+              <Settings size={16} />
             </button>
           </div>
         </div>
         
         {/* Tab Selection */}
-      <div className="px-4 mt-6">
-        <div className="flex bg-gray-50 dark:bg-gray-800/50 p-1 rounded-2xl gap-1 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory" id="tab-container">
-          <TabNavItem active={activeTab === 'news'} onClick={() => setActiveTab('news')} icon={<MessageSquare size={16} />} label="Bản tin" />
-          {isMember && (
-             <TabNavItem 
-               active={activeTab === 'chat'} 
-               onClick={() => setActiveTab('chat')} 
-               icon={<MessageCircle size={16} />} 
-               label="Trò chuyện" 
-               badgeCount={id && profile ? <ChatTabBadge groupId={id} lastReadAt={profile?.lastReadChat?.[id]} /> : 0}
-             />
-          )}
-          <TabNavItem active={activeTab === 'members'} onClick={() => setActiveTab('members')} icon={<Users size={16} />} label="Thành viên" />
-          {isMember && (
-            <>
-              <TabNavItem active={activeTab === 'tasks'} onClick={() => setActiveTab('tasks')} icon={<CheckCircle2 size={16} />} label="Công việc" />
-              <TabNavItem active={activeTab === 'finance'} onClick={() => setActiveTab('finance')} icon={<Wallet size={16} />} label="Tài chính" />
-              <TabNavItem active={activeTab === 'polls'} onClick={() => setActiveTab('polls')} icon={<BarChart3 size={16} />} label="Bình chọn" />
-            </>
-          )}
+        <div className="flex overflow-x-auto no-scrollbar scroll-smooth snap-x">
+          <div className="flex p-1 gap-1 min-w-full">
+            <TabNavItem active={activeTab === 'news'} onClick={() => setActiveTab('news')} icon={<MessageSquare size={16} />} label="Bản tin" />
+            {isMember && (
+               <TabNavItem 
+                 active={activeTab === 'chat'} 
+                 onClick={() => setActiveTab('chat')} 
+                 icon={<MessageCircle size={16} />} 
+                 label="Nhắn tin" 
+                 badgeCount={id && profile ? <ChatTabBadge groupId={id} lastReadAt={profile?.lastReadChat?.[id]} /> : 0}
+               />
+            )}
+            <TabNavItem active={activeTab === 'members'} onClick={() => setActiveTab('members')} icon={<Users size={16} />} label="Mọi người" />
+            {isMember && (
+              <>
+                <TabNavItem active={activeTab === 'tasks'} onClick={() => setActiveTab('tasks')} icon={<CheckCircle2 size={16} />} label="Việc làm" />
+                <TabNavItem active={activeTab === 'finance'} onClick={() => setActiveTab('finance')} icon={<Wallet size={16} />} label="Quỹ nhóm" />
+                <TabNavItem active={activeTab === 'polls'} onClick={() => setActiveTab('polls')} icon={<BarChart3 size={16} />} label="Bình chọn" />
+              </>
+            )}
+          </div>
         </div>
-
+      </div>
         {/* Pagination Dots */}
-        <div className="flex justify-center gap-1.5 mt-4">
+        <div className="flex justify-center gap-1.5 mt-4 pb-2">
           {[0, 1, 2].map((i) => (
             <div 
               key={i}
@@ -621,8 +620,6 @@ export default function GroupDetail() {
             />
           ))}
         </div>
-      </div>
-      </div>
 
       <div className="p-4">
         {!isMember && activeTab !== 'news' && activeTab !== 'members' && (

@@ -49,51 +49,73 @@ export default function CreateGroup() {
   };
 
   return (
-    <div className="p-4 flex flex-col min-h-screen">
-      <header className="flex items-center gap-4 mb-8">
-        <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-gray-100">
+    <div className="p-6 flex flex-col min-h-screen bg-gray-50 dark:bg-gray-950">
+      <header className="flex items-center gap-6 mb-12">
+        <button 
+          onClick={() => navigate(-1)} 
+          className="w-12 h-12 flex items-center justify-center bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 hover:scale-110 active:scale-90 transition-all text-gray-900 dark:text-white"
+        >
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <h2 className="text-xl font-bold">Tạo nhóm mới</h2>
+        <div className="space-y-1">
+          <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter uppercase font-display italic leading-none">Kiến tạo</h2>
+          <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.3em]">Bắt đầu không gian mới</p>
+        </div>
       </header>
 
-      <form onSubmit={handleCreate} className="space-y-6 flex-1">
-        <div className="space-y-2">
-          <label className="text-xs font-bold uppercase text-gray-400 tracking-wider ml-1">
-            Tên nhóm
+      <form onSubmit={handleCreate} className="space-y-8 flex-1">
+        <div className="space-y-3">
+          <label className="text-[10px] font-black uppercase text-gray-400 tracking-[0.2em] ml-1 block">
+            Định danh nhóm
           </label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Ví dụ: Nhóm Phượt 2024"
-            className="w-full bg-white border border-gray-100 rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-medium"
-            required
-          />
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
+              <Users className="w-5 h-5 text-gray-300 group-focus-within:text-blue-500 transition-colors" />
+            </div>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Ví dụ: Dream Team 2024"
+              className="w-full bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-[32px] pl-16 pr-6 py-5 focus:outline-none focus:border-blue-500 font-black text-base text-gray-900 dark:text-white transition-all shadow-sm focus:shadow-xl focus:shadow-blue-500/5 placeholder:text-gray-200 dark:placeholder:text-gray-800"
+              required
+            />
+          </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-xs font-bold uppercase text-gray-400 tracking-wider ml-1">
-            Mô tả
+        <div className="space-y-3">
+          <label className="text-[10px] font-black uppercase text-gray-400 tracking-[0.2em] ml-1 block">
+            Tầm nhìn & Sứ mệnh
           </label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Ghi chú về nhóm của bạn..."
-            className="w-full bg-white border border-gray-100 rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-medium min-h-[120px]"
-          />
+          <div className="relative group">
+            <div className="absolute left-6 top-6 pointer-events-none">
+              <Layout className="w-5 h-5 text-gray-300 group-focus-within:text-blue-500 transition-colors" />
+            </div>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Ghi chú về mục tiêu hoặc cam kết chung của nhóm..."
+              className="w-full bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-[32px] pl-16 pr-6 py-5 focus:outline-none focus:border-blue-500 font-medium text-sm text-gray-900 dark:text-gray-300 transition-all shadow-sm focus:shadow-xl focus:shadow-blue-500/5 placeholder:text-gray-200 dark:placeholder:text-gray-800 min-h-[160px] resize-none"
+            />
+          </div>
         </div>
 
-        <div className="p-6 bg-blue-50 rounded-3xl border border-blue-100/50 flex items-start gap-4">
-          <div className="p-3 bg-white rounded-2xl shadow-sm text-blue-600">
-            <Users className="w-6 h-6" />
+        <div className="p-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[40px] text-white shadow-xl shadow-blue-500/20 flex flex-col gap-6 relative overflow-hidden">
+          <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+          
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-blue-600 shadow-lg">
+              <Users size={24} />
+            </div>
+            <div>
+              <h4 className="font-black text-sm uppercase tracking-widest italic leading-none mb-1.5">Quyền hạn sáng lập</h4>
+              <p className="text-[10px] text-blue-100 font-bold uppercase tracking-wider opacity-80">Chỉ mình bạn mới có quyền này</p>
+            </div>
           </div>
-          <div>
-            <h4 className="font-bold text-blue-900 text-sm">Chỉ bạn mới thấy</h4>
-            <p className="text-blue-700/70 text-xs mt-1">
-              Bạn sẽ là người sáng lập (Owner). Bạn có thể mời thêm Admin sau khi tạo nhóm.
-            </p>
-          </div>
+          
+          <p className="text-xs text-blue-50/80 font-medium leading-relaxed italic">
+            "Bạn sẽ bắt đầu với tư cách là Chủ sở hữu (Owner). Sau khi nhóm được khởi tạo, bạn có thể thiết lập thêm Đội ngũ quản trị để cùng vận hành không gian này."
+          </p>
         </div>
 
         <div className="flex-1" />
@@ -101,9 +123,9 @@ export default function CreateGroup() {
         <button
           type="submit"
           disabled={loading || !name.trim()}
-          className="w-full bg-blue-600 text-white rounded-2xl py-4 font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all active:scale-[0.98] disabled:opacity-50 disabled:grayscale"
+          className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-950 rounded-[32px] py-6 font-black uppercase text-xs tracking-[0.3em] shadow-2xl shadow-gray-400 dark:shadow-none hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:grayscale italic"
         >
-          {loading ? 'Đang tạo...' : 'Xác nhận tạo nhóm'}
+          {loading ? 'Đang khởi tạo...' : 'Kích hoạt không gian'}
         </button>
       </form>
     </div>
