@@ -6,7 +6,7 @@ import { motion, AnimatePresence, LayoutGroup } from 'motion/react';
 import { 
   CheckCircle2, Clock, Play, AlertCircle, 
   Calendar, Plus, Filter, 
-  Search, MessageSquare, Flag, Sparkles, BrainCircuit, X, Bot, RefreshCw
+  Search, MessageSquare, Flag
 } from 'lucide-react';
 import { cn, formatDate } from '../../core/utils';
 import { handleFirestoreError, OperationType } from '../../hooks/useAuth';
@@ -14,8 +14,6 @@ import EmptyState from '../ui/EmptyState';
 import { toast } from 'react-hot-toast';
 import { NotificationService } from '../../services/notificationService';
 import TaskDetailModal from './TaskDetailModal';
-import { analyzeTasks } from '../../services/geminiService';
-import Markdown from 'react-markdown';
 
 interface TaskTabProps {
   groupId: string;
@@ -49,29 +47,6 @@ export default function TaskTab({ groupId, groupName, canManage, onAddTask, owne
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [dragOverStatus, setDragOverStatus] = useState<TaskStatus | null>(null);
-  
-  // AI States
-  const [isAIShowing, setIsAIShowing] = useState(false);
-  const [aiAnalysis, setAIAnalysis] = useState<string | null>(null);
-  const [isAIAnalyzing, setIsAIAnalyzing] = useState(false);
-
-  const handleAIAnalyze = async () => {
-    if (tasks.length === 0) {
-      toast.error('Chưa có công việc để phân tích');
-      return;
-    }
-    setIsAIAnalyzing(true);
-    setIsAIShowing(true);
-    try {
-      const result = await analyzeTasks(tasks, members);
-      setAIAnalysis(result);
-    } catch (error) {
-      toast.error('Lỗi phân tích AI');
-      console.error(error);
-    } finally {
-      setIsAIAnalyzing(false);
-    }
-  };
 
   useEffect(() => {
     const q = query(collection(db, 'groups', groupId, 'tasks'), orderBy('createdAt', 'desc'));
@@ -265,92 +240,15 @@ export default function TaskTab({ groupId, groupName, canManage, onAddTask, owne
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center lg:justify-end gap-3 w-full lg:w-auto">
-          {canManage && (
-            <button 
-              onClick={handleAIAnalyze}
-              disabled={isAIAnalyzing}
-              className="px-6 py-4 bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 rounded-[20px] text-[10px] font-black uppercase tracking-widest shadow-lg border border-indigo-100 dark:border-indigo-900/30 hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
-            >
-              {isAIAnalyzing ? (
-                <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <>
-                  <Sparkles size={18} /> Phân Tích AI
-                </>
-              )}
-            </button>
-          )}
-
-          {canManage && (
-            <button 
-              onClick={onAddTask}
-              className="w-full lg:w-auto px-8 py-4 bg-indigo-600 text-white rounded-[20px] text-[10px] font-black uppercase tracking-widest shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3"
-            >
-              <Plus size={20} /> Tạo Công Việc Mới
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* AI Analysis Panel */}
-      <AnimatePresence>
-        {isAIShowing && (
-          <motion.div 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden mb-8"
+        {canManage && (
+          <button 
+            onClick={onAddTask}
+            className="w-full lg:w-auto px-8 py-4 bg-indigo-600 text-white rounded-[20px] text-[10px] font-black uppercase tracking-widest shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3"
           >
-            <div className="bg-indigo-600 rounded-[40px] p-8 text-white relative shadow-2xl shadow-indigo-500/30">
-               <div className="absolute top-8 right-8 flex items-center gap-2">
-                 <button 
-                   onClick={handleAIAnalyze}
-                   disabled={isAIAnalyzing}
-                   className="p-3 hover:bg-white/10 rounded-2xl transition-colors"
-                   title="Làm mới phân tích"
-                 >
-                   <RefreshCw size={20} className={cn(isAIAnalyzing && "animate-spin")} />
-                 </button>
-                 <button 
-                   onClick={() => setIsAIShowing(false)}
-                   className="p-3 hover:bg-white/10 rounded-2xl transition-colors"
-                 >
-                   <X size={20} />
-                 </button>
-               </div>
-
-               <div className="flex items-start gap-6 max-w-5xl">
-                 <div className="w-16 h-16 bg-white/10 rounded-3xl flex items-center justify-center backdrop-blur-xl border border-white/20 shrink-0">
-                    <Bot size={32} />
-                 </div>
-                 <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-4">
-                      <h4 className="text-xl font-black italic uppercase tracking-tight">Trợ lý Phân tích Công việc</h4>
-                      <div className="px-3 py-1 bg-white/10 rounded-full text-[10px] font-black tracking-widest uppercase backdrop-blur-md">Admin Only</div>
-                    </div>
-
-                    {isAIAnalyzing ? (
-                      <div className="space-y-4 py-8">
-                        <div className="h-4 bg-white/10 rounded-full w-3/4 animate-pulse" />
-                        <div className="h-4 bg-white/10 rounded-full w-full animate-pulse" />
-                        <div className="h-4 bg-white/10 rounded-full w-2/3 animate-pulse" />
-                      </div>
-                    ) : aiAnalysis ? (
-                      <div className="prose prose-invert max-w-none prose-p:leading-relaxed prose-li:my-1">
-                        <div className="markdown-body">
-                          <Markdown>{aiAnalysis}</Markdown>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-white/60 font-medium py-4">Nhấn "Làm mới" để bắt đầu phân tích...</p>
-                    )}
-                 </div>
-               </div>
-            </div>
-          </motion.div>
+            <Plus size={20} /> Tạo Công Việc Mới
+          </button>
         )}
-      </AnimatePresence>
+      </div>
 
       {/* Board View */}
       <div className="flex-1 overflow-x-auto pb-12 scrollbar-hide -mx-4 lg:mx-0 px-4 lg:px-0">

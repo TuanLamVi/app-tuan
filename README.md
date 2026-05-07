@@ -1,44 +1,49 @@
-# MyGroup - Ứng dụng Quản lý Nhóm & Cộng đồng Toàn diện
+# MyGroups - Ứng dụng quản lý nhóm cộng đồng
 
-MyGroup là nền tảng quản lý nhóm chuyên nghiệp, được thiết kế để giải quyết mọi nhu cầu vận hành của đội nhóm, clb, hay cộng đồng. Ứng dụng tập trung vào tính minh bạch trong tài chính, hiệu quả trong trao đổi và sự gắn kết giữa các thành viên qua các công cụ quản trị thông minh.
+MyGroups là ứng dụng chuyên nghiệp giúp các nhóm (clann, lớp học, dự án) quản lý tài chính và hoạt động nội bộ một cách minh bạch, realtime và bảo mật.
 
-## ✨ Các Tính năng Chủ chốt
+## ✨ Tính năng nổi bật
 
-- **🏠 Trung tâm Nhóm (Group Dashboard):** Theo dõi mọi biến động của nhóm trong một màn hình duy nhất với cấu trúc tab linh hoạt.
-- **💬 Trao đổi Real-time (Smart Chat):** Trải nghiệm nhắn tin hiện đại phong cách Zalo/Messenger, hỗ trợ cảm xúc (reactions), thu hồi tin nhắn và phân nhóm thời gian thông minh.
-- **📢 Bản tin (Announcements):** Hệ thống thông báo quan trọng giúp truyền tải thông tin đến toàn bộ thành viên nhanh chóng và chuyên nghiệp.
-- **💰 Quản lý Tài chính (Finance Hub):** 
-  - Theo dõi số dư quỹ nhóm thời gian thực.
-  - Quản lý thu chi minh bạch với hệ thống duyệt giao dịch từ ban quản trị.
-  - Lịch sử giao dịch chi tiết, hỗ trợ các loại tiền tệ khác nhau.
-- **📋 Quản lý Nhiệm vụ (Task Management):** Phân công công việc, theo dõi tiến độ và thời hạn (deadlines) của từng thành viên trong nhóm.
-- **🗳️ Bình chọn (Polls):** Tạo các cuộc trưng cầu ý kiến minh bạch, giúp nhóm đưa ra quyết định dựa trên số đông một cách công bằng.
-- **👥 Quản trị Thành viên:** 
-  - Mời thành viên mới bằng Email/SĐT với tính năng xem trước thông tin profile để tránh nhầm lẫn.
-  - Phân quyền chặt chẽ: Chủ nhóm (Owner) và Thành viên.
-- **⚙️ Tùy biến Nâng cao:** 
-  - Cho phép Chủ nhóm quyết định các tính năng hiển thị cho nhóm.
-  - Thiết lập Tab mặc định khi vào nhóm để tối ưu hóa quy trình làm việc.
+- **Quản lý nhóm (Management):** Theo dõi hoạt động, tin tức và thành viên.
+- **Tài chính (Finance):** Thu/Chi minh bạch, duyệt giao dịch bởi Trưởng/Phó nhóm.
+- **Chiến dịch (Campaigns):** Quản lý các hoạt động, sự kiện riêng biệt của nhóm.
+- **Bản tin (News):** Cập nhật thông báo quan trọng đến toàn bộ thành viên.
+- **Realtime Notifications:** Thông báo tức thì khi có lời mời, giao dịch được duyệt hoặc tin mới.
+- **Bảo mật:** Phân quyền Owner/Deputy/Member chặt chẽ qua Firestore Security Rules.
+- **Dark Mode:** Giao diện tối hiện đại, bảo vệ mắt.
+- **Export CSV:** Xuất báo cáo giao dịch tài chính chuyên nghiệp.
 
-## 🛠 Công nghệ & Kiến trúc
+## 🛠 Công nghệ sử dụng
 
 - **Frontend:** React 18, Vite, TypeScript.
-- **Giao diện:** 
-  - Tailwind CSS cho thiết kế Responsive & Modern UI.
-  - Framer Motion (`motion/react`) cho các chuyển động mượt mà.
-  - Lucide React cho hệ thống icon đồng nhất.
-- **Backend-as-a-Service:**
-  - **Firebase Authentication:** Bảo mật đăng nhập qua Google & Email.
-  - **Cloud Firestore:** Cơ sở dữ liệu NoSQL Real-time với bảo mật Rules đa tầng.
-- **Trải nghiệm Người dùng:**
-  - Hỗ trợ Chế độ tối (Dark Mode).
-  - Web App (PWA) tối ưu hoàn hảo cho các thiết bị di động.
+- **Styling:** Tailwind CSS, Framer Motion (`motion/react`).
+- **Backend:** Firebase (Auth, Firestore, Hosting).
+- **Icons:** Lucide React.
+- **Toasts:** React Hot Toast.
 
-## 🚀 Bắt đầu Sử dụng
+## 🚀 Hướng dẫn chạy Project
 
-1. **Truy cập:** Mở liên kết ứng dụng trên trình duyệt.
-2. **Đăng nhập:** Sử dụng tài khoản Google để tham gia hoặc tạo nhóm mới.
-3. **Quản trị:** Nếu là Chủ nhóm, đừng quên vào mục Cài đặt để thiết lập Tab mặc định và bật/tắt các tính năng cần thiết cho nhóm của mình.
+### 1. Trên trình duyệt (Web)
+- Mở URL Preview được cung cấp bởi AI Studio.
+- Đăng nhập/Đăng ký để bắt đầu trải nghiệm.
+
+### 2. Thiết lập Firebase (Nếu muốn triển khai riêng)
+- Truy cập [Firebase Console](https://console.firebase.google.com/).
+- Tạo project mới và bật **Authentication (Email/Google)**, **Firestore**.
+- Deploy Rules: Sử dụng nội dung file `firestore.rules`.
+- Cập nhật config trong `firebase-applet-config.json`.
+
+### 3. Trải nghiệm trên Mobile (PWA)
+Ứng dụng được thiết kế **Responsive Mobile-first**. Bạn có thể:
+- Mở URL ứng dụng bằng Safari (iOS) hoặc Chrome (Android).
+- Chọn "Thêm vào màn hình chính" (Add to Home Screen) để sử dụng như một ứng dụng Native (PWA).
+
+## 📂 Kiến trúc mã nguồn
+
+- `src/services`: Xử lý logic nghiệp vụ & API.
+- `src/hooks`: Quản lý state & dữ liệu realtime.
+- `src/pages`: Toàn bộ màn hình ứng dụng.
+- `src/components`: UI components dùng chung (Modal, Card, UI Elements).
 
 ---
-*Dự án được phát triển và tối ưu hóa bởi Google AI Studio Build.*
+*Phát triển bởi Google AI Studio Build.*

@@ -8,7 +8,7 @@ import {
   ArrowLeft, Wallet, Plus, Receipt, Settings, Users, 
   ChevronRight, TrendingUp, TrendingDown, MessageSquare, MessageCircle,
   Flag, UserPlus, Bell, Search, Check, Info, Crown, Shield, UserCheck,
-  RefreshCcw, Download, X, CheckCircle2, Camera, BarChart3, Sparkles
+  RefreshCcw, Download, X, CheckCircle2, Camera, BarChart3
 } from 'lucide-react';
 import { formatCurrency, formatDate, cn } from '../core/utils';
 import { toast } from 'react-hot-toast';
@@ -25,7 +25,6 @@ import TaskModal from '../components/group/TaskModal';
 import PollTab from '../components/group/PollTab';
 import PollModal from '../components/group/PollModal';
 import ChatTab from '../components/group/ChatTab';
-import AIAssistantTab from '../components/group/AIAssistantTab';
 import EmptyState from '../components/ui/EmptyState';
 import Skeleton, { TransactionSkeleton } from '../components/ui/Skeleton';
 
@@ -33,7 +32,7 @@ import { handleFirestoreError, OperationType, useAuth } from '../hooks/useAuth';
 import { NotificationService } from '../services/notificationService';
 import { exportToCSV } from '../core/utils';
 
-type TabType = 'news' | 'finance' | 'members' | 'tasks' | 'polls' | 'chat' | 'ai';
+type TabType = 'news' | 'finance' | 'members' | 'tasks' | 'polls' | 'chat';
 
 export default function GroupDetail() {
   const { id } = useParams<{ id: string }>();
@@ -304,13 +303,13 @@ export default function GroupDetail() {
   const filteredTransactions = transactions;
 
   // SỬA ĐỔI: Lọc tab dựa trên cấu hình enabled_tabs từ Firebase
-  const availableTabs: TabType[] = ['news', 'chat', 'members', 'tasks', 'finance', 'polls', 'ai'].filter(t => {
+  const availableTabs: TabType[] = ['news', 'chat', 'members', 'tasks', 'finance', 'polls'].filter(t => {
     // Luôn cho phép news và members nếu là thành viên, 
     // nhưng nếu enabled_tabs có giá trị false thì sẽ bị ẩn
     const isEnabled = group?.enabled_tabs?.[t as keyof typeof group.enabled_tabs] ?? true;
     if (!isEnabled) return false;
     
-    // Kiểm tra quyền truy cập bổ sung (ví dụ: chỉ thành viên mới thấy finance, tasks, chat, polls, ai)
+    // Kiểm tra quyền truy cập bổ sung (ví dụ: chỉ thành viên mới thấy finance, tasks, chat, polls)
     if (t === 'news' || t === 'members') return true;
     return isMember;
   }) as TabType[];
@@ -576,7 +575,6 @@ export default function GroupDetail() {
                 {tab === 'tasks' && 'Nhiệm vụ'}
                 {tab === 'finance' && 'Tài chính'}
                 {tab === 'polls' && 'Bình chọn'}
-                {tab === 'ai' && 'Trợ lý AI'}
               </button>
             ))}
           </div>
@@ -785,22 +783,6 @@ export default function GroupDetail() {
                       isMember={isMember || false} 
                       memberProfiles={memberProfiles} 
                       onAddPoll={() => setIsPollModalOpen(true)} 
-                    />
-                  </div>
-                )}
-
-                {isMember && activeTab === 'ai' && (
-                  <div className="max-w-4xl mx-auto">
-                    <AIAssistantTab 
-                      context={{
-                        groupName: group.name,
-                        description: group.description || 'Không có mô tả',
-                        membersCount: group.members.length,
-                        balance: group.totalFund || 0,
-                        currency: group.currency || 'VND',
-                        tasks: [], // We can pass tasks here if needed, but for now empty
-                        announcements: announcements.map(a => ({ title: a.title, date: formatDate(a.createdAt) }))
-                      }}
                     />
                   </div>
                 )}
