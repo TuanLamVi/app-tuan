@@ -168,7 +168,7 @@ export default function JoinGroup() {
           <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-3xl">
             <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-1">Số dư</p>
             <p className="font-black text-green-600">
-              {formatCurrency(group.balance || 0)}
+              {formatCurrency(group.totalFund || 0)}
             </p>
           </div>
         </div>
