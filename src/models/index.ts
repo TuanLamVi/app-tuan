@@ -73,6 +73,15 @@ export interface Group {
   pendingOwner?: string; // UID for ownership transfer
   lastAnnoId?: string; // ID of the latest announcement
   lastMessageAt?: any; // Timestamp of the latest message
+  default_tab?: string; // Default tab to show when entering group
+  enabled_tabs?: {
+    news: boolean;
+    chat: boolean;
+    members: boolean;
+    tasks: boolean;
+    finance: boolean;
+    polls: boolean;
+  };
   createdAt: Date;
 }
 
@@ -102,6 +111,7 @@ export interface Campaign {
 }
 
 export type TaskStatus = 'pending' | 'doing' | 'done';
+export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 
 export interface Task {
   id: string;
@@ -111,7 +121,9 @@ export interface Task {
   assigneeIds: string[];
   assigneeNames: string[];
   status: TaskStatus;
+  priority?: TaskPriority;
   dueDate?: Date;
+  comments?: Comment[];
   createdBy: string;
   createdAt: Date;
 }

@@ -8,7 +8,7 @@ import { ChatMessage, UserProfile } from '../../models';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Send, User, Trash2, Smile, Image as ImageIcon, 
-  MoreVertical, MessageCircle, Clock, Maximize2, Minimize2, X, ThumbsUp
+  MoreVertical, MessageCircle, Clock, Maximize2, Minimize2, X, ThumbsUp, Check
 } from 'lucide-react';
 
 const REACTIONS = [
@@ -19,6 +19,24 @@ const REACTIONS = [
   { emoji: '😢', label: 'Buồn' },
   { emoji: '🔥', label: 'Lửa' }
 ];
+
+const formatDateSeparator = (date: Date) => {
+  const now = new Date();
+  const d = new Date(date);
+  
+  if (d.toDateString() === now.toDateString()) return 'Hôm nay';
+  
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  if (d.toDateString() === yesterday.toDateString()) return 'Hôm qua';
+  
+  return d.toLocaleDateString('vi-VN', { 
+    weekday: 'long', 
+    day: 'numeric', 
+    month: 'long' 
+  });
+};
+
 import { cn, formatDate } from '../../core/utils';
 import { handleFirestoreError, OperationType } from '../../hooks/useAuth';
 import Skeleton from '../ui/Skeleton';
@@ -26,14 +44,15 @@ import Skeleton from '../ui/Skeleton';
 interface ChatTabProps {
   groupId: string;
   canManage: boolean;
+  onClose?: () => void;
 }
 
-export default function ChatTab({ groupId, canManage }: ChatTabProps) {
+export default function ChatTab({ groupId, canManage, onClose }: ChatTabProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(true);
   const [activeActionId, setActiveActionId] = useState<string | null>(null);
   const [showReactionPicker, setShowReactionPicker] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -236,36 +255,32 @@ export default function ChatTab({ groupId, canManage }: ChatTabProps) {
 
   return (
     <div className={cn(
-      "flex flex-col bg-white dark:bg-gray-900 overflow-hidden transition-all duration-300",
+      "flex flex-col bg-slate-50 dark:bg-slate-950 overflow-hidden transition-all duration-300",
       isFullScreen 
         ? "fixed inset-0 z-[60] h-full rounded-0" 
-        : "h-[600px] rounded-[32px] border border-gray-100 dark:border-gray-800 shadow-sm relative"
+        : "h-[600px] rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm relative"
     )}>
       {/* Header */}
-      <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-white dark:bg-gray-900">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-white">
+      <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-20">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
             <MessageCircle size={20} />
           </div>
           <div>
-            <p className="text-sm font-black uppercase italic tracking-tight dark:text-white">Trò chuyện nhóm</p>
-            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{messages.length} tin nhắn</p>
+            <p className="text-sm font-extrabold text-slate-900 dark:text-white tracking-tight leading-none mb-1">Trò chuyện nhóm</p>
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{messages.length} tin nhắn</p>
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button 
-            onClick={() => setIsFullScreen(!isFullScreen)}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors text-gray-500"
-            title={isFullScreen ? "Thu nhỏ" : "Phóng to"}
-          >
-            {isFullScreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
-          </button>
-          {isFullScreen && (
+          {onClose && (
             <button 
-              onClick={() => setIsFullScreen(false)}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+              onClick={onClose}
+              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors text-slate-400 hover:text-slate-900 dark:hover:text-white group"
             >
-              <X size={20} className="dark:text-white" />
+              <X size={20} />
             </button>
           )}
         </div>
@@ -275,14 +290,14 @@ export default function ChatTab({ groupId, canManage }: ChatTabProps) {
       <div 
         ref={scrollRef}
         onClick={() => activeActionId && setActiveActionId(null)}
-        className="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar scroll-smooth touch-pan-y"
+        className="flex-1 overflow-y-auto p-4 md:p-6 space-y-1 no-scrollbar scroll-smooth touch-pan-y"
       >
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
-            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
-              <MessageCircle size={32} />
+            <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
+              <MessageCircle size={40} className="text-slate-300" />
             </div>
-            <p className="text-sm font-bold uppercase tracking-widest italic">Hãy bắt đầu câu chuyện!</p>
+            <p className="text-sm font-bold uppercase tracking-widest italic text-slate-400">Hãy bắt đầu câu chuyện!</p>
           </div>
         ) : (
           <AnimatePresence initial={false}>
@@ -291,142 +306,140 @@ export default function ChatTab({ groupId, canManage }: ChatTabProps) {
               const prevMessage = messages[index - 1];
               const nextMessage = messages[index + 1];
               
-              // A message is first in a group if:
-              // 1. It's the first message ever
-              // 2. Different sender from previous
-              // 3. Same sender but > 1 minute gap
+              // Date separator check
+              const showDateSeparator = !prevMessage || 
+                new Date(message.createdAt).toDateString() !== new Date(prevMessage.createdAt).toDateString();
+
+              // Messenger-style grouping
               const isFirstInGroup = !prevMessage || 
                                     prevMessage.senderId !== message.senderId || 
-                                    (message.createdAt.getTime() - prevMessage.createdAt.getTime() > 60000);
+                                    showDateSeparator ||
+                                    (message.createdAt.getTime() - prevMessage.createdAt.getTime() > 300000); // 5 mins
 
-              // A message is last in a group if:
-              // 1. It's the last message ever
-              // 2. Different sender for next
-              // 3. Same sender but > 1 minute gap
               const isLastInGroup = !nextMessage || 
                                    nextMessage.senderId !== message.senderId || 
-                                   (nextMessage.createdAt.getTime() - message.createdAt.getTime() > 60000);
+                                   (new Date(nextMessage.createdAt).toDateString() !== new Date(message.createdAt).toDateString()) ||
+                                   (nextMessage.createdAt.getTime() - message.createdAt.getTime() > 300000);
+
+              const sameDay = nextMessage && (new Date(nextMessage.createdAt).toDateString() === new Date(message.createdAt).toDateString());
+              const timeDiff = nextMessage ? (nextMessage.createdAt.getTime() - message.createdAt.getTime()) : 0;
+              const isTight = !isLastInGroup && sameDay && timeDiff < 60000;
 
               return (
-                <motion.div 
-                  key={message.id}
-                  initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  className={cn(
-                    "flex gap-3 max-w-[90%]",
-                    isOwn ? "flex-row-reverse self-end" : "flex-row self-start",
-                    !isFirstInGroup ? "-mt-2" : "mt-2"
+                <React.Fragment key={message.id}>
+                  {showDateSeparator && (
+                    <div className="flex justify-center my-8">
+                      <div className="px-4 py-1.5 bg-slate-200 dark:bg-slate-800/50 rounded-full backdrop-blur-sm">
+                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                          {formatDateSeparator(message.createdAt)}
+                        </span>
+                      </div>
+                    </div>
                   )}
-                >
-                  {/* Avatar */}
-                  {!isOwn && isFirstInGroup ? (
-                    <div className="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 overflow-hidden flex-shrink-0 mt-1">
-                      {message.senderPhoto ? (
-                        <img src={message.senderPhoto} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                          <User size={14} />
+
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    className={cn(
+                      "flex gap-2 max-w-[85%] md:max-w-[75%]",
+                      isOwn ? "flex-row-reverse self-end ml-auto" : "flex-row self-start mr-auto",
+                      isTight ? "mb-0.5" : "mb-3",
+                      isFirstInGroup && !showDateSeparator ? "mt-4" : "mt-0"
+                    )}
+                  >
+                    {/* Avatar Column */}
+                    <div className="w-8 flex-shrink-0 flex flex-col justify-end pb-1">
+                      {!isOwn && isLastInGroup && (
+                        <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden shadow-sm border border-white dark:border-slate-700">
+                          {message.senderPhoto ? (
+                            <img src={message.senderPhoto} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-slate-400">
+                              <User size={14} />
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
-                  ) : (
-                    !isOwn && <div className="w-8 flex-shrink-0" />
-                  )}
 
-                  <div 
-                    className={cn(
-                      "flex flex-col relative",
-                      isOwn ? "items-end" : "items-start"
-                    )}
-                    onMouseDown={(e) => startLongPress(e, message.id)}
-                    onMouseMove={handleMove}
-                    onMouseUp={stopLongPress}
-                    onMouseLeave={stopLongPress}
-                    onTouchStart={(e) => startLongPress(e, message.id)}
-                    onTouchMove={handleMove}
-                    onTouchEnd={stopLongPress}
-                  >
-                    {!isOwn && isFirstInGroup && (
-                      <span className="text-[10px] font-black uppercase text-gray-500 mb-1 ml-1 tracking-tight">
-                        {message.senderName}
-                      </span>
-                    )}
-                    
-                    <div className={cn(
-                      "relative group px-4 py-2.5 rounded-2xl text-sm font-medium transition-all shadow-sm",
-                      isOwn 
-                        ? cn("bg-blue-600 text-white", isFirstInGroup ? "rounded-tr-none" : "rounded-tr-2xl") 
-                        : cn("bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-100 dark:border-gray-700", isFirstInGroup ? "rounded-tl-none" : "rounded-tl-2xl"),
-                      activeActionId === message.id && "scale-[1.02] ring-2 ring-blue-500/20 shadow-lg z-10"
-                    )}>
-                      <p className="whitespace-pre-wrap break-words leading-relaxed">{message.content}</p>
-                      
-                      {/* Floating Quick Reaction (Outside Bubble) */}
-                      <div className={cn(
-                        "absolute -bottom-2 -right-1 flex items-center gap-1 z-10 transition-all",
-                        activeActionId === message.id && "scale-110"
-                      )}>
-                        {/* Heart Quick React */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleReaction(message.id, '❤️');
-                          }}
-                          className={cn(
-                            "transition-all duration-300 flex items-center",
-                            message.reactions?.['❤️']?.includes(auth.currentUser?.uid || '')
-                              ? "opacity-100 scale-110 grayscale-0" 
-                              : "opacity-20 grayscale hover:opacity-60 hover:grayscale-0"
-                          )}
-                        >
-                          <span className="text-[10px]">❤️</span>
-                          {message.reactions?.['❤️']?.length > 0 && (
-                            <span className="text-[8px] font-black tabular-nums ml-0.5 text-gray-400 dark:text-gray-500">
-                              {message.reactions['❤️'].length}
-                            </span>
-                          )}
-                        </button>
-
-                        {/* Other active reactions */}
-                        {message.reactions && Object.entries(message.reactions).map(([emoji, uids]) => {
-                          const count = (uids as string[] || []).length;
-                          if (emoji === '❤️' || count === 0) return null;
-                          const hasReacted = (uids as string[] || []).includes(auth.currentUser?.uid || '');
-                          
-                          return (
-                            <button
-                              key={emoji}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleReaction(message.id, emoji);
-                              }}
-                              className={cn(
-                                "flex items-center gap-0.5 transition-all duration-300",
-                                hasReacted ? "opacity-100" : "opacity-80"
-                              )}
-                            >
-                              <span className="text-[10px]">{emoji}</span>
-                              <span className="text-[8px] font-black tabular-nums text-gray-500 dark:text-gray-400">
-                                {count}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                      
-                      {(isOwn || canManage) && (
-                        <button 
-                          onClick={() => handleDeleteMessage(message.id)}
-                          className={cn(
-                            "absolute top-1/2 -translate-y-1/2 p-2 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex",
-                            isOwn ? "-left-10" : "-right-10"
-                          )}
-                        >
-                          <Trash2 size={12} />
-                        </button>
+                    <div 
+                      className={cn(
+                        "flex flex-col relative group",
+                        isOwn ? "items-end" : "items-start"
                       )}
+                      onMouseDown={(e) => startLongPress(e, message.id)}
+                      onMouseMove={handleMove}
+                      onMouseUp={stopLongPress}
+                      onMouseLeave={stopLongPress}
+                      onTouchStart={(e) => startLongPress(e, message.id)}
+                      onTouchMove={handleMove}
+                      onTouchEnd={stopLongPress}
+                    >
+                      {!isOwn && isFirstInGroup && (
+                        <span className="text-[10px] font-bold text-slate-400 mb-1 ml-2 tracking-tight">
+                          {message.senderName}
+                        </span>
+                      )}
+                      
+                      <div className="relative">
+                        <div className={cn(
+                          "px-4 py-2.5 text-sm font-medium transition-all duration-200 shadow-sm",
+                          isOwn 
+                            ? "bg-indigo-600 text-white" 
+                            : "bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-100 dark:border-slate-700",
+                          // Bubble corners logic
+                          isOwn 
+                            ? cn(
+                                "rounded-[20px]",
+                                isFirstInGroup && !isLastInGroup && "rounded-tr-md",
+                                !isFirstInGroup && !isLastInGroup && "rounded-r-md",
+                                !isFirstInGroup && isLastInGroup && "rounded-br-md"
+                              )
+                            : cn(
+                                "rounded-[20px]",
+                                isFirstInGroup && !isLastInGroup && "rounded-tl-md",
+                                !isFirstInGroup && !isLastInGroup && "rounded-l-md",
+                                !isFirstInGroup && isLastInGroup && "rounded-bl-md"
+                              ),
+                          activeActionId === message.id && "scale-[1.05] ring-4 ring-indigo-500/20 shadow-xl z-10"
+                        )}>
+                          <p className="whitespace-pre-wrap break-words leading-relaxed">{message.content}</p>
+                          
+                          {/* Reactions container */}
+                          {message.reactions && Object.keys(message.reactions).length > 0 && (
+                            <div className={cn(
+                              "absolute -bottom-3 flex items-center gap-1 bg-white dark:bg-slate-700 rounded-full px-1.5 py-0.5 shadow-sm border border-slate-100 dark:border-slate-600 z-10",
+                              isOwn ? "right-1" : "left-1"
+                            )}>
+                              {Object.entries(message.reactions).map(([emoji, uids]) => {
+                                const count = (uids as string[]).length;
+                                if (count === 0) return null;
+                                return (
+                                  <span key={emoji} className="flex items-center gap-0.5">
+                                    <span className="text-[10px]">{emoji}</span>
+                                    {count > 1 && <span className="text-[8px] font-bold text-slate-500 dark:text-slate-300">{count}</span>}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
 
-                      {/* Long press action menu */}
+                        {/* Quick Action Button (Desktop Only) */}
+                        <div className={cn(
+                          "absolute top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex items-center gap-1 p-2",
+                          isOwn ? "right-full mr-2" : "left-full ml-2"
+                        )}>
+                          <button 
+                            onClick={() => setActiveActionId(message.id)}
+                            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-400 transition-colors"
+                          >
+                            <Smile size={16} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Message Context Menu */}
                       <AnimatePresence>
                         {activeActionId === message.id && (
                           <motion.div 
@@ -434,12 +447,11 @@ export default function ChatTab({ groupId, canManage }: ChatTabProps) {
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.9 }}
                             className={cn(
-                              "absolute z-50 bottom-full mb-2 bg-white dark:bg-gray-800 rounded-[24px] shadow-2xl border border-gray-100 dark:border-gray-700 p-2 min-w-[200px]",
+                              "absolute z-50 bottom-full mb-3 bg-white dark:bg-slate-800 rounded-[28px] shadow-2xl border border-slate-100 dark:border-slate-700 p-2 min-w-[220px]",
                               isOwn ? "right-0" : "left-0"
                             )}
                           >
-                            {/* Reactions Picker */}
-                            <div className="flex items-center gap-1 border-b border-gray-100 dark:border-gray-700 pb-2 mb-1 px-1">
+                            <div className="flex items-center justify-around gap-1 px-1 mb-2">
                               {REACTIONS.map((r) => (
                                 <button 
                                   key={r.emoji}
@@ -447,55 +459,56 @@ export default function ChatTab({ groupId, canManage }: ChatTabProps) {
                                     e.stopPropagation();
                                     handleReaction(message.id, r.emoji);
                                   }}
-                                  className="w-8 h-8 flex items-center justify-center text-lg hover:scale-125 transition-transform active:scale-95 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700"
-                                  title={r.label}
+                                  className="w-8 h-8 flex items-center justify-center text-xl hover:scale-125 transition-transform active:scale-95 rounded-full hover:bg-slate-50 dark:hover:bg-slate-700"
                                 >
                                   {r.emoji}
                                 </button>
                               ))}
                             </div>
 
-                            <div className="flex flex-col gap-1">
+                            <div className="space-y-1 px-1">
                               {(isOwn || canManage) && (
                                 <button 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
+                                  onClick={() => {
                                     handleDeleteMessage(message.id);
                                     setActiveActionId(null);
                                   }}
-                                  className="flex items-center gap-2 w-full px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 rounded-xl transition-colors"
+                                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 rounded-2xl transition-colors text-left"
                                 >
-                                  <Trash2 size={14} />
-                                  <span className="text-[10px] font-black uppercase tracking-tight">Thu hồi tin nhắn</span>
+                                  <Trash2 size={16} />
+                                  <span className="text-xs font-bold uppercase tracking-tight">Gỡ tin nhắn</span>
                                 </button>
                               )}
-                              
                               <button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setActiveActionId(null);
-                                }}
-                                className="flex items-center gap-2 w-full px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-500 rounded-xl transition-colors"
+                                onClick={() => setActiveActionId(null)}
+                                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-500 rounded-2xl transition-colors text-left"
                               >
-                                <X size={14} />
-                                <span className="text-[10px] font-black uppercase tracking-tight">Hủy</span>
+                                <X size={16} />
+                                <span className="text-xs font-bold uppercase tracking-tight">Hủy bỏ</span>
                               </button>
                             </div>
                           </motion.div>
                         )}
                       </AnimatePresence>
-                    </div>
 
-                    {isLastInGroup && (
-                      <span className={cn(
-                        "text-[8px] font-bold text-gray-400 mt-1 flex items-center gap-1",
-                        isOwn ? "mr-1" : "ml-1"
-                      )}>
-                        <Clock size={8} /> {formatDate(message.createdAt)}
-                      </span>
-                    )}
-                  </div>
-                </motion.div>
+                      {isLastInGroup && (
+                        <div className={cn(
+                          "flex items-center gap-1.5 mt-1 animate-in fade-in slide-in-from-top-1",
+                          isOwn ? "mr-2 justify-end" : "ml-2 justify-start"
+                        )}>
+                          <span className="text-[9px] font-bold text-slate-400 dark:text-slate-600 lowercase tracking-tight">
+                            {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                          {isOwn && (
+                            <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full flex items-center justify-center">
+                              <Check size={6} className="text-white" />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                </React.Fragment>
               );
             })}
           </AnimatePresence>
@@ -503,49 +516,60 @@ export default function ChatTab({ groupId, canManage }: ChatTabProps) {
       </div>
 
       {/* Input area */}
-      <form 
-        onSubmit={handleSendMessage}
-        className={cn(
-          "p-4 bg-gray-50/50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800 transition-all",
-          isFullScreen && "pb-[env(safe-area-inset-bottom,16px)]"
-        )}
-      >
-        <div className="max-w-4xl mx-auto flex items-center gap-2 bg-white dark:bg-gray-900 rounded-2xl p-2 pl-4 shadow-sm border border-gray-100 dark:border-gray-800">
-          <textarea 
-            ref={textareaRef}
-            value={newMessage}
-            onChange={(e) => {
-              setNewMessage(e.target.value);
-              // Auto-expand height
-              e.target.style.height = 'auto';
-              e.target.style.height = Math.min(e.target.scrollHeight, 150) + 'px';
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendMessage(e);
-              }
-            }}
-            placeholder="Nhập tin nhắn..."
-            rows={1}
-            className="flex-1 bg-transparent border-none focus:ring-0 focus:outline-none shadow-none text-sm font-medium py-2 dark:text-white resize-none no-scrollbar min-h-[40px] max-h-[150px]"
-          />
-          <button 
-            type="submit"
-            disabled={!newMessage.trim() || isSending}
-            className={cn(
-              "p-2.5 rounded-xl transition-all active:scale-95 disabled:opacity-50",
-              newMessage.trim() ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30" : "bg-gray-100 dark:bg-gray-800 text-gray-400"
-            )}
-          >
-            {isSending ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <Send size={18} />
-            )}
-          </button>
-        </div>
-      </form>
+      <div className="p-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
+        <form 
+          onSubmit={handleSendMessage}
+          className="max-w-4xl mx-auto"
+        >
+          <div className="flex items-start gap-2">
+            <div className="flex items-center gap-1 mt-1.5 px-1">
+              <button type="button" className="p-2 text-slate-400 hover:text-indigo-500 transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-full">
+                <ImageIcon size={20} />
+              </button>
+              <button type="button" className="p-2 text-slate-400 hover:text-indigo-500 transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-full">
+                <Smile size={20} />
+              </button>
+            </div>
+            
+            <div className="flex-1 relative flex items-center group bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 transition-all focus-within:border-indigo-500/50 focus-within:ring-4 focus-within:ring-indigo-500/5">
+              <textarea 
+                ref={textareaRef}
+                value={newMessage}
+                onChange={(e) => {
+                  setNewMessage(e.target.value);
+                  e.target.style.height = 'auto';
+                  e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage(e);
+                  }
+                }}
+                placeholder="Nhập nội dung tin nhắn..."
+                rows={1}
+                className="flex-1 bg-transparent border-none focus:ring-0 focus:outline-none text-sm font-medium py-3 px-5 dark:text-white resize-none no-scrollbar min-h-[44px] max-h-[120px]"
+              />
+              <button 
+                type="submit"
+                disabled={!newMessage.trim() || isSending}
+                className={cn(
+                  "mr-1 p-2.5 rounded-2xl transition-all duration-300 transform active:scale-90 disabled:opacity-30 disabled:scale-100 disabled:bg-transparent",
+                  newMessage.trim() 
+                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 translate-x-0 opacity-100" 
+                    : "text-slate-300 translate-x-2 opacity-0"
+                )}
+              >
+                {isSending ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Send size={18} />
+                )}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

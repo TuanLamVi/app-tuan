@@ -66,6 +66,18 @@
         "pendingOwner": { "type": "string" },
         "lastAnnoId": { "type": "string" },
         "lastMessageAt": { "type": "string", "format": "date-time" },
+        "default_tab": { "type": "string" },
+        "enabled_tabs": {
+          "type": "object",
+          "properties": {
+            "news": { "type": "boolean" },
+            "chat": { "type": "boolean" },
+            "members": { "type": "boolean" },
+            "tasks": { "type": "boolean" },
+            "finance": { "type": "boolean" },
+            "polls": { "type": "boolean" }
+          }
+        },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["id", "name", "ownerId", "createdAt"]
@@ -170,7 +182,9 @@
         "assigneeIds": { "type": "array", "items": { "type": "string" } },
         "assigneeNames": { "type": "array", "items": { "type": "string" } },
         "status": { "type": "string", "enum": ["pending", "doing", "done"] },
+        "priority": { "type": "string", "enum": ["low", "medium", "high", "urgent"] },
         "dueDate": { "type": "string", "format": "date-time" },
+        "comments": { "type": "array", "items": { "$ref": "Comment" } },
         "createdBy": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
       },

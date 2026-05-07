@@ -116,11 +116,11 @@ export default function PollTab({ groupId, canManage, isMember, memberProfiles, 
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {isMember && (
         <button 
           onClick={onAddPoll}
-          className="w-full p-4 bg-white dark:bg-gray-900 border border-dashed border-blue-200 dark:border-blue-900/50 rounded-3xl text-blue-600 dark:text-blue-400 font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98] hover:bg-blue-50/30"
+          className="w-full p-6 bg-white dark:bg-slate-900 border border-dashed border-indigo-200 dark:border-slate-800 rounded-[32px] text-indigo-600 font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 shadow-sm transition-all active:scale-[0.95] hover:bg-indigo-50/30"
         >
           <Plus size={18} /> Tạo cuộc bình chọn mới
         </button>
@@ -131,10 +131,10 @@ export default function PollTab({ groupId, canManage, isMember, memberProfiles, 
           icon={BarChart3} 
           title="Chưa có bình chọn" 
           message="Khởi tạo cuộc trưng cầu ý kiến thành viên tại đây."
-          className="py-12"
+          className="py-20"
         />
       ) : (
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {polls.map((poll) => {
             const pollOptions = poll.options || [];
             const totalVotes = pollOptions.reduce((acc, opt) => acc + (opt.voterIds || []).length, 0);
@@ -147,33 +147,33 @@ export default function PollTab({ groupId, canManage, isMember, memberProfiles, 
                 key={poll.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white dark:bg-gray-900 rounded-[32px] p-6 shadow-sm border border-gray-100 dark:border-gray-800 transition-colors"
+                className="bg-white dark:bg-slate-900 rounded-[40px] p-8 shadow-xl border border-slate-100 dark:border-slate-800 flex flex-col h-full text-left"
               >
-                <div className="flex justify-between items-start gap-4 mb-6">
+                <div className="flex justify-between items-start gap-4 mb-8">
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-black text-lg italic uppercase tracking-tight dark:text-white leading-tight">
+                    <h4 className="font-black text-xl italic uppercase tracking-tighter dark:text-white leading-tight">
                       {poll.question}
                     </h4>
-                    <div className="flex items-center gap-3 mt-2">
-                       <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center gap-1">
-                         <Users size={10} /> {totalVotes} lượt bình chọn
+                    <div className="flex items-center gap-4 mt-3">
+                       <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] flex items-center gap-2">
+                         <Users size={14} className="text-indigo-500" /> {totalVotes} VOTES
                        </p>
-                       <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center gap-1">
-                         <Clock size={10} /> {formatDate(poll.createdAt)}
+                       <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] flex items-center gap-2">
+                         <Clock size={14} /> {formatDate(poll.createdAt)}
                        </p>
                     </div>
                   </div>
                   {canManage && (
                     <button 
                       onClick={() => handleDeletePoll(poll.id)}
-                      className="p-2 text-gray-300 hover:text-red-500 transition-colors"
+                      className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-red-500 transition-all border border-slate-100 dark:border-slate-700"
                     >
                       <Trash2 size={16} />
                     </button>
                   )}
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-4 flex-1">
                   {pollOptions.map((option) => {
                     const isVoted = userVotedOptionIds.includes(option.id);
                     const percentage = totalVotes > 0 ? Math.round(((option.voterIds || []).length / totalVotes) * 100) : 0;
@@ -185,41 +185,41 @@ export default function PollTab({ groupId, canManage, isMember, memberProfiles, 
                         disabled={isVoting}
                         onClick={() => handleVote(poll.id, option.id)}
                         className={cn(
-                          "w-full text-left relative group rounded-2xl p-4 border transition-all overflow-hidden",
+                          "w-full text-left relative group rounded-2xl p-5 border transition-all overflow-hidden",
                           isVoted 
-                            ? "bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/20" 
-                            : "bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white border-transparent hover:border-blue-200"
+                            ? "bg-indigo-600 text-white border-indigo-600 shadow-xl shadow-indigo-500/20" 
+                            : "bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white border-transparent hover:border-indigo-200"
                         )}
                       >
                         {/* Progress Bar Background */}
                         {!isVoted && (
                           <div 
-                            className="absolute inset-0 bg-blue-500/10 transition-all duration-1000"
+                            className="absolute inset-0 bg-indigo-500/10 transition-all duration-1000"
                             style={{ width: `${percentage}%` }}
                           />
                         )}
 
                         <div className="relative flex justify-between items-center gap-4">
-                          <div className="flex items-center gap-3 flex-1">
+                          <div className="flex items-center gap-4 flex-1">
                             <div className={cn(
-                              "w-5 h-5 rounded-full flex items-center justify-center border-2 transition-all",
-                              isVoted ? "bg-white border-white text-blue-600" : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                              "w-6 h-6 rounded-full flex items-center justify-center border-2 transition-all",
+                              isVoted ? "bg-white border-white text-indigo-600 shadow-sm" : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
                             )}>
-                              {isVoted && <CheckCircle2 size={12} fill="currentColor" />}
+                              {isVoted && <CheckCircle2 size={14} fill="currentColor" />}
                             </div>
                             <span className="font-bold text-sm tracking-tight">{option.text}</span>
                           </div>
                           
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-3">
                              <span className={cn(
-                               "text-[10px] font-black uppercase tracking-widest",
-                               isVoted ? "text-white/80" : "text-gray-400"
+                               "text-[10px] font-black uppercase tracking-[0.2em]",
+                               isVoted ? "text-indigo-100" : "text-slate-400"
                              )}>
-                               {(option.voterIds || []).length} phiếu
+                               {(option.voterIds || []).length} P
                              </span>
                              <span className={cn(
-                               "text-xs font-black",
-                               isVoted ? "text-white" : "text-blue-600"
+                               "text-sm font-black italic mono",
+                               isVoted ? "text-white" : "text-indigo-600"
                              )}>
                                {percentage}%
                              </span>
@@ -228,20 +228,19 @@ export default function PollTab({ groupId, canManage, isMember, memberProfiles, 
 
                         {/* Voter Avatars */}
                         {(option.voterIds || []).length > 0 && (
-                          <div className="mt-2 flex items-center gap-1 relative z-10">
+                          <div className="mt-3 flex items-center gap-2 relative z-10">
                             <div className="flex -space-x-2 overflow-hidden">
-                              {option.voterIds.slice(0, 5).map(uid => {
-                                const profile = memberProfiles.find(p => p.uid === uid);
+                              {(option.voterIds || []).slice(0, 5).map(uid => {
+                                const profile = (memberProfiles || []).find(p => p.uid === uid);
                                 return (
                                   <div 
                                     key={uid}
-                                    title={profile?.displayName || 'Thành viên'}
-                                    className="inline-block h-5 w-5 rounded-full ring-2 ring-white dark:ring-gray-900 bg-gray-100 dark:bg-gray-800 overflow-hidden"
+                                    className="inline-block h-6 w-6 rounded-lg ring-2 ring-white dark:ring-slate-900 bg-slate-100 dark:bg-slate-800 overflow-hidden"
                                   >
                                     {profile?.photoURL ? (
-                                      <img src={profile.photoURL} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+                                      <img src={profile.photoURL} alt="" className="h-full w-full object-cover" />
                                     ) : (
-                                      <div className="h-full w-full flex items-center justify-center text-[8px] font-bold text-gray-500">
+                                      <div className="h-full w-full flex items-center justify-center text-[10px] font-black text-slate-400">
                                         {profile?.displayName?.[0] || '?'}
                                       </div>
                                     )}
@@ -251,10 +250,10 @@ export default function PollTab({ groupId, canManage, isMember, memberProfiles, 
                             </div>
                             {option.voterIds.length > 5 && (
                               <span className={cn(
-                                "text-[8px] font-bold",
-                                isVoted ? "text-white/60" : "text-gray-400"
+                                "text-[9px] font-black uppercase tracking-widest",
+                                isVoted ? "text-white/60" : "text-slate-400"
                               )}>
-                                +{option.voterIds.length - 5}
+                                +{option.voterIds.length - 5} MORE
                               </span>
                             )}
                           </div>
@@ -262,7 +261,7 @@ export default function PollTab({ groupId, canManage, isMember, memberProfiles, 
 
                         {isVoting && (
                           <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center">
-                            <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                            <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
                           </div>
                         )}
                       </button>
@@ -270,13 +269,13 @@ export default function PollTab({ groupId, canManage, isMember, memberProfiles, 
                   })}
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-gray-50 dark:border-gray-800 flex justify-between items-center">
-                   <p className="text-xs text-gray-400 font-bold uppercase tracking-widest italic">
-                     Bởi {poll.creatorName} {poll.createdBy === auth.currentUser?.uid && '(Bạn)'}
+                <div className="mt-8 pt-6 border-t border-slate-50 dark:border-slate-800 flex justify-between items-center">
+                   <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.2em] italic">
+                     By {poll.creatorName} {poll.createdBy === auth.currentUser?.uid ? '(YOU)' : ''}
                    </p>
                    {poll.allowMultiple && (
-                     <span className="text-[0.625rem] font-black uppercase tracking-widest text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">
-                       Cho phép chọn nhiều
+                     <span className="text-[8px] font-black uppercase tracking-[0.3em] text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1 rounded-full border border-indigo-100 dark:border-indigo-800/50">
+                       MULTIPLE SELECTION
                      </span>
                    )}
                 </div>

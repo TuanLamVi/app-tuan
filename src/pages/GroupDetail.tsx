@@ -96,6 +96,16 @@ export default function GroupDetail() {
           createdAt: data.createdAt?.toDate() || new Date()
         } as Group;
         setGroup(updatedGroup);
+
+        // THÊM MỚI: Thiết lập tab mặc định khi lần đầu vào nhóm
+        if (loading) {
+          const defaultTabFromGroup = updatedGroup.default_tab as TabType;
+          const isEnabled = updatedGroup.enabled_tabs?.[defaultTabFromGroup as keyof typeof updatedGroup.enabled_tabs] ?? true;
+          
+          if (defaultTabFromGroup && isEnabled) {
+            setActiveTab(defaultTabFromGroup);
+          }
+        }
         
         // Only fetch if members list actually changed
         const currentUids = updatedGroup.members || [];
@@ -292,6 +302,25 @@ export default function GroupDetail() {
 
   const filteredTransactions = transactions;
 
+  // SỬA ĐỔI: Lọc tab dựa trên cấu hình enabled_tabs từ Firebase
+  const availableTabs: TabType[] = ['news', 'chat', 'members', 'tasks', 'finance', 'polls'].filter(t => {
+    // Luôn cho phép news và members nếu là thành viên, 
+    // nhưng nếu enabled_tabs có giá trị false thì sẽ bị ẩn
+    const isEnabled = group?.enabled_tabs?.[t as keyof typeof group.enabled_tabs] ?? true;
+    if (!isEnabled) return false;
+    
+    // Kiểm tra quyền truy cập bổ sung (ví dụ: chỉ thành viên mới thấy finance, tasks, chat, polls)
+    if (t === 'news' || t === 'members') return true;
+    return isMember;
+  }) as TabType[];
+
+  // THÊM MỚI: Tự động chuyển tab nếu tab hiện tại bị vô hiệu hóa
+  useEffect(() => {
+    if (availableTabs.length > 0 && !availableTabs.includes(activeTab)) {
+      setActiveTab(availableTabs[0]);
+    }
+  }, [availableTabs, activeTab]);
+
   if (loading || !group) {
     return (
       <div className="p-4 space-y-6 bg-gray-50 min-h-screen">
@@ -367,11 +396,6 @@ export default function GroupDetail() {
 
   const isPendingOwner = group?.pendingOwner === auth.currentUser?.uid;
 
-  const availableTabs: TabType[] = ['news', 'chat', 'members', 'tasks', 'finance', 'polls'].filter(t => {
-    if (t === 'news' || t === 'members') return true;
-    return isMember;
-  }) as TabType[];
-
   const handleTabChange = (newTab: TabType) => {
     const currentIndex = availableTabs.indexOf(activeTab);
     const newIndex = availableTabs.indexOf(newTab);
@@ -418,7 +442,7 @@ export default function GroupDetail() {
     }
 
     const exportData = transactions.map(tx => {
-      const creator = memberProfiles.find(p => p.uid === tx.createdBy);
+      const creator = (memberProfiles || []).find(p => p.uid === tx.createdBy);
       return {
         'Ngày': formatDate(tx.createdAt),
         'Loại': tx.type === 'income' ? 'Thu' : 'Chi',
@@ -473,665 +497,357 @@ export default function GroupDetail() {
   };
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-950 min-h-screen pb-24 transition-colors">
-      {/* Group Cover Image */}
-      <div className="relative h-48 sm:h-64 w-full bg-blue-600 overflow-hidden">
-        {group.coverImage ? (
-          <img 
-            src={group.coverImage} 
-            alt={group.name} 
-            className="w-full h-full object-cover"
-            referrerPolicy="no-referrer"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center">
-            <Users size={64} className="text-white/20" />
-          </div>
-        )}
-        
-        {/* Update Cover Button */}
-        {canManage && (
-          <button 
-            onClick={() => {
-              setIsEditingCover(true);
-              setNewCoverURL(group.coverImage || '');
-            }}
-            className="absolute bottom-4 right-4 p-3 bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl text-white hover:bg-white/30 transition-all shadow-lg active:scale-95"
-          >
-            <Camera size={20} />
-          </button>
-        )}
-
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-      </div>
-
-      {/* Cover Edit Modal/Input (Simple inline overlay) */}
-      <AnimatePresence>
-        {isEditingCover && (
-          <motion.div 
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-          >
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[40px] p-8 shadow-2xl"
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase italic tracking-tight">Cập nhật ảnh bìa</h3>
-                <button onClick={() => setIsEditingCover(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
-                  <X className="text-gray-400" size={20} />
-                </button>
-              </div>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1 mb-2 block">URL Ảnh bìa</label>
-                  <input 
-                    type="text"
-                    value={newCoverURL}
-                    onChange={e => setNewCoverURL(e.target.value)}
-                    placeholder="https://..."
-                    className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-2xl px-4 py-4 font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/20"
-                  />
-                </div>
-                
-                {newCoverURL && (
-                  <div className="h-32 w-full rounded-2xl overflow-hidden border-2 border-dashed border-gray-100 dark:border-gray-800">
-                    <img src={newCoverURL} alt="Preview" className="w-full h-full object-cover" onError={(e) => (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=Invalid+URL'} />
-                  </div>
-                )}
-
-                <button 
-                  onClick={handleUpdateCover}
-                  className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-blue-500/20 transition-all active:scale-95"
-                >
-                  Lưu thay đổi
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Transfer Ownership Banner */}
-      <AnimatePresence>
-        {isPendingOwner && (
-          <motion.div 
-            initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-            className="bg-orange-500 text-white overflow-hidden"
-          >
-            <div className="p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-              <div className="flex items-center gap-2">
-                <Crown size={20} className="flex-shrink-0" />
-                <p className="text-sm font-bold">Bạn đã được đề nghị làm Trưởng nhóm mới.</p>
-              </div>
-              <div className="flex gap-2">
-                <button 
-                  onClick={handleAcceptTransfer}
-                  className="bg-white text-orange-600 px-4 py-1.5 rounded-full text-xs font-black uppercase flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
-                >
-                  <Check size={14} /> Chấp nhận
-                </button>
-                <button 
-                   onClick={async () => {
-                     await updateDoc(doc(db, 'groups', id!), { pendingOwner: null });
-                     toast.success('Đã từ chối');
-                   }}
-                   className="bg-orange-600 text-white border border-orange-400 px-4 py-1.5 rounded-full text-xs font-black uppercase shadow-sm active:scale-95 transition-all"
-                >
-                  Từ chối
-                </button>
+    <div className="bg-slate-50 dark:bg-black min-h-screen pb-24 transition-colors font-sans selection:bg-indigo-100 selection:text-indigo-900">
+      {/* Premium Glass Header - Compact */}
+      <header className="w-full px-2 sm:px-4 py-2">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/20 dark:border-slate-800/50 rounded-2xl px-4 py-2 flex items-center justify-between shadow-lg shadow-slate-200/30 dark:shadow-none">
+            <div className="flex items-center gap-3 text-left">
+              <button 
+                onClick={() => navigate('/')} 
+                className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-slate-800 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all active:scale-90 border border-slate-100 dark:border-slate-700 shadow-sm"
+              >
+                <ArrowLeft className="w-4 h-4 dark:text-white" />
+              </button>
+              <div className="min-w-0">
+                 <div className="flex items-center gap-1.5">
+                   <h1 className="font-black text-lg sm:text-xl uppercase tracking-tighter italic text-slate-900 dark:text-white leading-none truncate max-w-[120px] sm:max-w-none">
+                     {group.name}
+                   </h1>
+                   {isOwner && (
+                     <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center bg-indigo-600 rounded-md shadow-lg shadow-indigo-500/20 rotate-12">
+                       <Crown size={10} className="text-white fill-white" />
+                     </div>
+                   )}
+                 </div>
+                 <div className="flex items-center gap-2 mt-0.5">
+                   <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">
+                     {group.members?.length || 0} MEMBERS
+                   </span>
+                 </div>
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
-      {/* Sticky Header */}
-      <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl px-4 md:px-6 pt-6 md:pt-10 pb-4 rounded-b-[32px] md:rounded-b-[40px] shadow-sm sticky top-0 z-30 border-b border-gray-100 dark:border-gray-800 transition-all">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/')} className="w-10 h-10 flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-gray-800 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all active:scale-95">
-              <ArrowLeft className="w-5 h-5 dark:text-white" />
-            </button>
-            <div className="min-w-0">
-               <div className="flex items-center gap-2">
-                 <h1 className="font-black text-xl italic uppercase tracking-tighter truncate dark:text-white font-display" style={{ color: '#f7a24d' }}>{group.name}</h1>
-                 {isOwner && (
-                   <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center bg-amber-400 rounded-lg shadow-sm rotate-12">
-                     <Crown size={10} className="text-white fill-white" />
-                   </div>
-                 )}
-               </div>
-               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mt-1">{group.members?.length || 0} Thành viên</p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <button 
-              onClick={handleRefresh}
-              className={cn(
-                "w-10 h-10 flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-gray-400 hover:text-blue-600 transition-all active:scale-95",
-                isRefreshing && "animate-spin text-blue-600"
-              )}
-            >
-              <RefreshCcw size={16} />
-            </button>
-            <button 
-              onClick={() => setIsSettingsModalOpen(true)}
-              className="w-10 h-10 flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-gray-400 hover:text-blue-600 transition-all active:scale-95"
-            >
-              <Settings size={16} />
-            </button>
-          </div>
-        </div>
-        
-        {/* Tab Selection */}
-        <div className="flex overflow-x-auto no-scrollbar scroll-smooth snap-x">
-          <div className="flex p-1 gap-1 min-w-full">
-            <TabNavItem active={activeTab === 'news'} onClick={() => handleTabChange('news')} icon={<MessageSquare size={16} />} label="Bản tin" />
-            {isMember && (
-               <TabNavItem 
-                 active={activeTab === 'chat'} 
-                 onClick={() => handleTabChange('chat')} 
-                 icon={<MessageCircle size={16} />} 
-                 label="Nhắn tin" 
-                 badgeCount={id && profile ? <ChatTabBadge groupId={id} lastReadAt={profile?.lastReadChat?.[id]} /> : 0}
-               />
-            )}
-            <TabNavItem active={activeTab === 'members'} onClick={() => handleTabChange('members')} icon={<Users size={16} />} label="Mọi người" />
-            {isMember && (
-              <>
-                <TabNavItem active={activeTab === 'tasks'} onClick={() => handleTabChange('tasks')} icon={<CheckCircle2 size={16} />} label="Việc làm" />
-                <TabNavItem active={activeTab === 'finance'} onClick={() => handleTabChange('finance')} icon={<Wallet size={16} />} label="Quỹ nhóm" />
-                <TabNavItem active={activeTab === 'polls'} onClick={() => handleTabChange('polls')} icon={<BarChart3 size={16} />} label="Bình chọn" />
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-        {/* Pagination Dots */}
-        <div className="flex justify-center gap-1.5 mt-4 pb-2">
-          {[0, 1, 2].map((i) => (
-            <div 
-              key={i}
-              className={cn(
-                "h-1.5 rounded-full transition-all duration-500",
-                ((activeTab === 'news' || activeTab === 'chat' || activeTab === 'members') && i === 0) ||
-                ((activeTab === 'tasks' || activeTab === 'finance') && i === 1) ||
-                (activeTab === 'polls' && i === 2)
-                  ? "w-6 bg-gradient-to-r from-blue-600 to-indigo-600 shadow-sm shadow-blue-500/20" 
-                  : "w-1.5 bg-gray-200 dark:bg-gray-700"
-              )}
-            />
-          ))}
-        </div>
-
-      <motion.div 
-        className="flex-1 w-full relative overflow-hidden touch-pan-y"
-        drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.5}
-        onDragEnd={onDragEnd}
-      >
-        <div className="p-4 min-h-full">
-          {!isMember && activeTab !== 'news' && activeTab !== 'members' && (
-          <div className="py-20 text-center space-y-4">
-            <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto text-blue-600">
-              <Shield size={32} />
-            </div>
-            <h3 className="text-lg font-black uppercase italic tracking-tight dark:text-white">Nội dung giới hạn</h3>
-            <p className="text-xs text-gray-400 dark:text-gray-500 max-w-[240px] mx-auto leading-relaxed">
-              Bạn cần tham gia nhóm này để có thể xem thảo luận, công việc và tài chính.
-            </p>
-            <button 
-              onClick={() => navigate(`/join/${id}`)}
-              className="px-6 py-3 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-500/20"
-            >
-              Tham gia ngay
-            </button>
-          </div>
-        )}
-
-        <AnimatePresence mode="wait" custom={direction}>
-          {activeTab === 'news' && (
-            <motion.div 
-              key="news" 
-              custom={direction}
-              variants={tabVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{
-                x: { type: "spring", stiffness: 300, damping: 30 },
-                opacity: { duration: 0.2 }
-              }}
-              className="space-y-4"
-            >
-              {canManage && (
-                <button 
-                  onClick={() => setIsAnnoModalOpen(true)}
-                  className="w-full p-4 bg-white border border-dashed border-blue-200 rounded-3xl text-blue-600 font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98] hover:bg-blue-50/30"
-                >
-                  <Plus size={18} /> Đăng thông báo mới
-                </button>
-              )}
-              {announcements.length === 0 ? (
-                <EmptyState 
-                  icon={MessageSquare}
-                  title="Chưa có bản tin"
-                  message="Mọi thông báo quan trọng sẽ xuất hiện tại đây."
-                  className="py-12"
-                />
-              ) : (
-                <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-4">
-                  {announcements.map(anno => (
-                    <motion.div key={anno.id} variants={itemVariants}>
-                      <AnnouncementCard 
-                        announcement={anno} 
-                        groupId={id!} 
-                        memberProfiles={memberProfiles}
-                        isOwnerOrDeputy={canManage}
-                        onDelete={handleDeleteAnnouncement}
-                      />
-                    </motion.div>
-                  ))}
-                </motion.div>
-              )}
-              {hasMoreAnnos && announcements.length >= annoLimit && (
-                <button 
-                  onClick={() => setAnnoLimit(prev => prev + 10)}
-                  className="w-full py-3 text-gray-400 font-bold text-[10px] uppercase tracking-widest hover:text-blue-600 transition-colors"
-                >
-                  Xem thêm bản tin
-                </button>
-              )}
-            </motion.div>
-          )}
-
-          {isMember && activeTab === 'chat' && (
-            <motion.div 
-              key="chat" 
-              custom={direction}
-              variants={tabVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{
-                x: { type: "spring", stiffness: 300, damping: 30 },
-                opacity: { duration: 0.2 }
-              }}
-            >
-              <ChatTab groupId={id!} canManage={canManage} />
-            </motion.div>
-          )}
-
-          {isMember && activeTab === 'tasks' && (
-            <motion.div 
-              key="tasks" 
-              custom={direction}
-              variants={tabVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{
-                x: { type: "spring", stiffness: 300, damping: 30 },
-                opacity: { duration: 0.2 }
-              }}
-            >
-              <TaskTab 
-                groupId={id!}
-                groupName={group.name}
-                canManage={canManage}
-                ownerId={group.ownerId}
-                members={memberProfiles}
-                onAddTask={() => setIsTaskModalOpen(true)}
-              />
-            </motion.div>
-          )}
-
-          {isMember && activeTab === 'polls' && (
-            <motion.div 
-              key="polls" 
-              custom={direction}
-              variants={tabVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{
-                x: { type: "spring", stiffness: 300, damping: 30 },
-                opacity: { duration: 0.2 }
-              }}
-            >
-              <PollTab 
-                groupId={id!}
-                canManage={canManage}
-                isMember={isMember}
-                memberProfiles={memberProfiles}
-                onAddPoll={() => setIsPollModalOpen(true)}
-              />
-            </motion.div>
-          )}
-
-          {isMember && activeTab === 'finance' && (
-            <motion.div 
-              key="finance" 
-              custom={direction}
-              variants={tabVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{
-                x: { type: "spring", stiffness: 300, damping: 30 },
-                opacity: { duration: 0.2 }
-              }}
-              className="space-y-6"
-            >
-              <div className="bg-gray-900 rounded-3xl p-6 text-white shadow-xl shadow-gray-200">
-                <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">Số dư hiện tại</p>
-                <div className="flex items-baseline gap-2">
-                  <h2 className="text-3xl font-black">{formatCurrency(group.totalFund)}</h2>
-                  <span className="text-xs text-gray-400 font-bold uppercase">{group.currency}</span>
-                </div>
-                <div className="mt-6 grid grid-cols-2 gap-3">
-                  <button 
-                    onClick={handleExportCSV}
-                    className="bg-white/10 hover:bg-white/20 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Download size={14} /> Xuất CSV
-                  </button>
-                  <button 
-                    onClick={() => setIsTransactionModalOpen(true)}
-                    className="bg-blue-600 hover:bg-blue-700 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20"
-                  >
-                    <Plus size={14} /> Giao dịch
-                  </button>
-                </div>
+            <div className="flex items-center gap-2">
+              <div className="hidden sm:flex -space-x-1.5 mr-2">
+                {memberProfiles.slice(0, 3).map((p, i) => (
+                  <div key={i} className="w-7 h-7 rounded-full border-2 border-white dark:border-slate-900 bg-slate-100 dark:bg-slate-800 overflow-hidden shadow-sm">
+                    {p.photoURL ? <img src={p.photoURL} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[8px] font-black text-slate-400">?</div>}
+                  </div>
+                ))}
               </div>
-
-              {/* Campaigns/Events Section Integrated into Finance */}
-              <section className="space-y-4">
-                <div className="flex justify-between items-center px-1">
-                  <h3 className="font-black text-sm uppercase italic tracking-tight text-gray-900 dark:text-white flex items-center gap-2">
-                     <Flag size={18} className="text-orange-500" />
-                     Sự kiện & Mục tiêu
-                  </h3>
-                  {canManage && (
-                    <button 
-                      onClick={() => setIsCampaignModalOpen(true)}
-                      className="text-blue-600 text-[10px] font-black uppercase tracking-widest bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-xl border border-blue-100 dark:border-blue-800"
-                    >
-                      Tạo mới
-                    </button>
-                  )}
-                </div>
-                <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2 snap-x">
-                  {campaigns.length === 0 ? (
-                    <div className="w-full bg-orange-50/50 dark:bg-orange-900/10 border border-dashed border-orange-100 dark:border-orange-800/30 rounded-3xl p-6 text-center">
-                      <p className="text-xs text-orange-600/60 dark:text-orange-400/60 font-bold">Chưa có mục tiêu hay sự kiện nào</p>
-                    </div>
-                  ) : (
-                    campaigns.map(camp => (
-                      <div key={camp.id} className="min-w-[280px] snap-center">
-                        <CampaignCard 
-                          campaign={camp} 
-                          group={group} 
-                          isAdmin={canManage} 
-                        />
-                      </div>
-                    ))
-                  )}
-                </div>
-              </section>
-
-              <section>
-                <div className="flex justify-between items-center mb-4 px-1">
-                  <h3 className="font-black text-sm uppercase italic tracking-tight text-gray-900 dark:text-white">Lịch sử thu chi</h3>
-                  <div className="flex flex-wrap gap-2 items-center">
-                    <select 
-                      value={txUserFilter}
-                      onChange={e => setTxUserFilter(e.target.value)}
-                      className="bg-gray-100 dark:bg-gray-800 dark:text-gray-200 px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border-none focus:ring-0 appearance-none shadow-sm"
-                    >
-                      <option value="all">Mọi người</option>
-                      {memberProfiles.map(p => (
-                        <option key={p.uid} value={p.uid}>{p.displayName}</option>
-                      ))}
-                    </select>
-                    
-                    <div className="flex bg-gray-100 dark:bg-gray-800 p-0.5 rounded-lg shadow-inner">
-                      {(['all', 'income', 'expense'] as const).map(f => (
-                        <button 
-                          key={f}
-                          onClick={() => setTxFilter(f)}
-                          className={cn(
-                            "px-3 py-1 rounded-md text-[9px] font-black uppercase transition-all",
-                            txFilter === f ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm" : "text-gray-400"
-                          )}
-                        >
-                          {f === 'all' ? 'Tất cả' : f === 'income' ? 'Thu' : 'Chi'}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-3">
-                  {filteredTransactions.length === 0 ? (
-                    <EmptyState 
-                      icon={Receipt}
-                      title="Chưa có giao dịch"
-                      message="Bắt đầu ghi lại các khoản thu chi của nhóm."
-                      className="py-12"
-                    />
-                  ) : (
-                    <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-3">
-                      {filteredTransactions.map(tx => (
-                        <motion.div key={tx.id} variants={itemVariants}>
-                          <TransactionCard 
-                            transaction={tx} 
-                            group={group} 
-                            memberProfiles={memberProfiles}
-                            campaigns={campaigns}
-                            isAdmin={canManage}
-                          />
-                        </motion.div>
-                      ))}
-                    </motion.div>
-                  )}
-                </div>
-
-                {hasMoreTx && (
-                   <button 
-                    onClick={() => {
-                      setTxLimit(prev => prev + 10);
-                    }}
-                    className="w-full mt-4 py-4 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl text-gray-400 font-black text-[10px] uppercase tracking-widest hover:text-blue-600 hover:border-blue-100 transition-all shadow-sm flex items-center justify-center gap-2"
-                  >
-                    {loading && transactions.length > 0 ? (
-                      <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <>
-                        <RefreshCcw size={14} />
-                        Xem thêm giao dịch
-                      </>
-                    )}
-                  </button>
-                )}
-              </section>
-            </motion.div>
-          )}
-
-          {activeTab === 'members' && (
-            <motion.div 
-              key="members" 
-              custom={direction}
-              variants={tabVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{
-                x: { type: "spring", stiffness: 300, damping: 30 },
-                opacity: { duration: 0.2 }
-              }}
-              className="space-y-4"
-            >
-              {canManage && requests.length > 0 && (
-                <div className="bg-blue-600 rounded-[32px] p-6 text-white shadow-xl shadow-blue-100 mb-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <UserCheck size={20} />
-                    <h4 className="font-black text-sm uppercase tracking-wider">Yêu cầu & Lời mời ({requests.length})</h4>
-                  </div>
-                  <div className="space-y-3">
-                    {requests.map(req => {
-                      const profile = requestProfiles[req.uid];
-                      const isInvited = req.status === 'invited';
-                      return (
-                        <div key={req.id} className="bg-white/10 rounded-2xl p-3 flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center font-bold overflow-hidden text-xs">
-                              {profile?.photoURL ? <img src={profile.photoURL} alt="" referrerPolicy="no-referrer" /> : (profile?.displayName?.[0] || req.inviteeIdentifier?.[0] || '?')}
-                            </div>
-                            <div>
-                              <p className="text-xs font-bold">{profile?.displayName || req.inviteeIdentifier || 'Đang tải...'}</p>
-                              <p className="text-[8px] opacity-60 font-medium uppercase tracking-wider">
-                                {isInvited ? 'Chờ người dùng chấp nhận' : 'Chờ Admin duyệt'}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            {!isInvited && (
-                              <button 
-                                onClick={() => handleRequestAction(req.id, 'approve', req.type, req.uid, req.inviteeIdentifier)}
-                                className="px-3 py-1.5 bg-white text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest"
-                              >
-                                Duyệt
-                              </button>
-                            )}
-                            <button 
-                              onClick={() => handleRequestAction(req.id, 'reject', req.type, req.uid)}
-                              className="px-3 py-1.5 bg-blue-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest"
-                            >
-                              {isInvited ? 'Hủy lời mời' : 'Từ chối'}
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
 
               <button 
                 onClick={() => setIsInviteModalOpen(true)}
-                className="w-full p-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-3xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-gray-200 dark:shadow-none active:scale-[0.98] transition-transform"
+                className="w-9 h-9 flex items-center justify-center rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 transition-all active:scale-95"
               >
-                <UserPlus size={18} /> Mời thành viên mới
+                <UserPlus size={16} />
               </button>
+              <button 
+                onClick={() => setIsSettingsModalOpen(true)}
+                className="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 transition-all active:scale-95"
+              >
+                <Settings size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
 
-              <div className="relative">
-                <input 
-                  type="text" 
-                  value={memberSearchTerm}
-                  onChange={e => setMemberSearchTerm(e.target.value)}
-                  placeholder="Tìm thành viên, SĐT..."
-                  className="w-full bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl pl-10 pr-4 py-3 text-sm focus:ring-2 focus:ring-blue-500/10 font-bold text-gray-900 dark:text-white shadow-sm transition-colors"
-                />
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" size={16} />
-              </div>
-              
-              <div className="bg-white dark:bg-gray-800 rounded-[32px] border border-gray-100 dark:border-gray-700 overflow-hidden shadow-sm transition-colors">
-                <div className="bg-gray-50/50 dark:bg-gray-700/50 px-5 py-3 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-widest">
-                   <span>Danh sách ({filteredMembers.length})</span>
-                 </div>
-                {paginatedMembers.length === 0 ? (
-                  <div className="py-10 text-center flex flex-col items-center gap-2">
-                    <Info className="text-gray-200 dark:text-gray-700" size={32} />
-                    <p className="text-gray-400 dark:text-gray-500 text-xs font-bold">Không tìm thấy thành viên phù hợp</p>
-                  </div>
-                ) : (
-                  <motion.div variants={containerVariants} initial="hidden" animate="show">
-                    {paginatedMembers.map((member, i) => (
-                      <motion.button 
-                        key={member.uid} 
-                        variants={itemVariants}
-                        onClick={() => setSelectedMember(member)}
-                        className={cn(
-                          "w-full p-4 flex items-center gap-4 text-left transition-colors hover:bg-gray-50/50 dark:hover:bg-gray-700/50", 
-                          i !== paginatedMembers.length - 1 && "border-b border-gray-50 dark:border-gray-700"
-                        )}
-                      >
-                        <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 rounded-2xl flex-shrink-0 flex items-center justify-center overflow-hidden border-2 border-white dark:border-gray-800 shadow-sm transition-colors">
-                          {member.photoURL ? <img src={member.photoURL} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" /> : <div className="text-blue-600 dark:text-blue-400 font-black">{member.displayName?.[0]}</div>}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-1.5">
-                            <h5 className="font-bold text-sm text-gray-900 dark:text-white">{member.displayName}</h5>
-                            {group.ownerId === member.uid && <Crown size={12} className="text-orange-500" />}
-                            {group.deputies?.includes(member.uid) && <Shield size={12} className="text-blue-500" />}
-                          </div>
-                          <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">
-                            {member.phoneNumber || 'Chưa có SĐT'}
-                          </p>
-                        </div>
-                        <ChevronRight size={16} className="text-gray-200 dark:text-gray-700" />
-                      </motion.button>
-                    ))}
-                  </motion.div>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6">
+        {/* Dynamic Tab Navigation (Modern Top Tabs) */}
+        <div className="z-[35] -mx-4 sm:mx-0 px-4 sm:px-0 py-2 bg-slate-50/80 dark:bg-black/80 backdrop-blur-md">
+          <div className="flex overflow-x-auto no-scrollbar gap-1.5 p-1 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md rounded-2xl border border-white/20 dark:border-slate-800/50 shadow-sm">
+            {availableTabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => handleTabChange(tab)}
+                className={cn(
+                  "px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
+                  activeTab === tab 
+                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" 
+                    : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                 )}
+              >
+                {tab === 'news' && 'Bản tin'}
+                {tab === 'chat' && 'Trao đổi'}
+                {tab === 'members' && 'Thành viên'}
+                {tab === 'tasks' && 'Nhiệm vụ'}
+                {tab === 'finance' && 'Tài chính'}
+                {tab === 'polls' && 'Bình chọn'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Content Area with Swipe Support */}
+        <div className="mt-8 overflow-hidden touch-pan-y">
+          {!isMember && activeTab !== 'news' && activeTab !== 'members' ? (
+            <div className="py-24 text-center max-w-md mx-auto space-y-8">
+              <div className="w-24 h-24 bg-indigo-50 dark:bg-indigo-900/20 rounded-[32px] flex items-center justify-center mx-auto text-indigo-600 shadow-inner">
+                <Shield size={40} />
               </div>
+              <div className="space-y-3">
+                <h3 className="text-2xl font-black uppercase italic tracking-tighter text-slate-900 dark:text-white leading-tight">Truy cập giới hạn</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                  Trở thành thành viên của nhóm để mở khóa các tính năng thảo luận, quản lý công việc và theo dõi tài chính.
+                </p>
+              </div>
+              <button 
+                onClick={() => navigate(`/join/${id}`)}
+                className="w-full py-5 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-indigo-600/20 active:scale-95 transition-all"
+              >
+                Gửi yêu cầu tham gia
+              </button>
+            </div>
+          ) : (
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.div
+                key={activeTab}
+                custom={direction}
+                variants={tabVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.2}
+                onDragEnd={onDragEnd}
+                transition={{
+                  x: { type: "spring", stiffness: 300, damping: 30 },
+                  opacity: { duration: 0.2 }
+                }}
+                className="cursor-default"
+              >
+                {activeTab === 'news' && (
+                  <div className="space-y-6 max-w-4xl mx-auto">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {canManage && (
+                        <button 
+                          onClick={() => setIsAnnoModalOpen(true)}
+                          className="p-6 bg-white dark:bg-slate-900 border border-dashed border-indigo-200 dark:border-slate-800 rounded-[32px] text-indigo-600 font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 shadow-sm transition-all active:scale-[0.95] hover:bg-indigo-50/30"
+                        >
+                          <Plus size={18} /> Đăng thông báo mới
+                        </button>
+                      )}
+                      <button 
+                        onClick={() => setIsInviteModalOpen(true)}
+                        className={`p-6 bg-white dark:bg-slate-900 border border-dashed border-slate-200 dark:border-slate-800 rounded-[32px] text-slate-500 font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 shadow-sm transition-all active:scale-[0.95] hover:bg-slate-50/50 ${!canManage ? 'sm:col-span-2' : ''}`}
+                      >
+                        <UserPlus size={18} className="text-indigo-500" /> Mời thêm thành viên
+                      </button>
+                    </div>
 
-              {paginatedMembers.length < filteredMembers.length && (
-                <button 
-                  onClick={() => setMemberPage(prev => prev + 1)}
-                  className="w-full py-3 text-gray-400 font-bold text-[10px] uppercase tracking-widest hover:text-blue-600 transition-colors"
-                >
-                  Xem thêm thành viên
-                </button>
-              )}
+                    {announcements.length === 0 ? (
+                      <EmptyState icon={MessageSquare} title="Chưa có bản tin" message="Mọi thông báo quan trọng sẽ xuất hiện tại đây." className="py-20" />
+                    ) : (
+                      <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
+                        {announcements.map(anno => (
+                          <motion.div key={anno.id} variants={itemVariants}>
+                            <AnnouncementCard announcement={anno} groupId={id!} memberProfiles={memberProfiles} isOwnerOrDeputy={canManage} onDelete={handleDeleteAnnouncement} />
+                          </motion.div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </div>
+                )}
 
-              {/* Pending Invites Section */}
-              {group.pendingInvites && group.pendingInvites.length > 0 && (
-                <div className="mt-8 space-y-3">
-                  <p className="text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-widest px-1">Đã mời nhưng chưa tham gia ({group.pendingInvites.length})</p>
-                  <div className="space-y-2">
-                    {group.pendingInvites.map((identifier) => (
-                      <div key={identifier} className="bg-white dark:bg-gray-900 px-4 py-3 rounded-2xl flex items-center justify-between border border-dashed border-gray-200 dark:border-gray-800 shadow-sm transition-colors">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 font-black">
-                            {identifier[0].toUpperCase()}
+                {isMember && activeTab === 'chat' && (
+                  <ChatTab 
+                    groupId={id!} 
+                    canManage={canManage} 
+                    onClose={() => handleTabChange('news')} 
+                  />
+                )}
+
+                {isMember && activeTab === 'tasks' && (
+                  <div className="max-w-6xl mx-auto space-y-8">
+                    {/* Progress Bento Box - Now in Tasks Tab */}
+                    <div className="bg-indigo-600 rounded-[40px] p-8 text-white shadow-2xl shadow-indigo-500/20 border border-indigo-500 flex flex-col justify-between relative overflow-hidden text-left">
+                      <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+                      
+                      <div>
+                        <label className="text-[10px] font-black uppercase text-indigo-100 tracking-[0.3em] mb-4 block">Tiến độ công việc</label>
+                        <div className="flex items-center gap-6">
+                          <div className="relative w-24 h-24 flex items-center justify-center">
+                            <svg className="w-full h-full -rotate-90">
+                              <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-indigo-500/30" />
+                              <circle cx="48" cy="48" r="40" stroke="white" strokeWidth="8" fill="transparent" 
+                                strokeDasharray={2 * Math.PI * 40} 
+                                strokeDashoffset={2 * Math.PI * 40 * (1 - 0.75)} 
+                                strokeLinecap="round" 
+                              />
+                            </svg>
+                            <span className="absolute text-xl font-mono italic font-black">75%</span>
                           </div>
-                          <div>
-                            <p className="text-sm font-bold text-gray-900 dark:text-white truncate max-w-[150px]">{identifier}</p>
-                            <p className="text-[10px] text-gray-400 dark:text-gray-500 font-medium italic">Chờ người dùng tham gia...</p>
+                          <div className="space-y-1">
+                            <h3 className="text-2xl font-black italic uppercase tracking-tighter">Sắp hoàn thành</h3>
+                            <p className="text-xs text-indigo-100 font-medium leading-relaxed opacity-80">Còn 4 công việc quan trọng cần xử lý trong tuần này.</p>
                           </div>
                         </div>
-                        {canManage && (
+                      </div>
+                    </div>
+
+                    <TaskTab groupId={id!} groupName={group.name} canManage={canManage} ownerId={group.ownerId} members={memberProfiles} onAddTask={() => setIsTaskModalOpen(true)} />
+                  </div>
+                )}
+
+                {isMember && activeTab === 'finance' && (
+                  <div className="space-y-10 max-w-5xl mx-auto">
+                    {/* Fund Bento Box - Now in Finance Tab */}
+                    <div className="bg-white dark:bg-slate-900 rounded-[40px] p-8 shadow-2xl shadow-slate-200/50 dark:shadow-none border border-slate-50 dark:border-slate-800 relative overflow-hidden group text-left">
+                      <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-[100px] pointer-events-none" />
+                      <div className="relative z-10 flex flex-col h-full justify-between">
+                        <div>
+                          <label className="text-[10px] font-black uppercase text-slate-400 tracking-[0.3em] mb-4 block">Quỹ hiện tại</label>
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-4xl sm:text-6xl font-black tracking-tighter text-slate-900 dark:text-white font-mono italic">
+                              {formatCurrency(group.balance).replace('₫', '')}
+                            </span>
+                            <span className="text-lg font-black text-slate-400">VND</span>
+                          </div>
+                        </div>
+                        
+                        <div className="mt-12 flex flex-wrap gap-4">
                           <button 
-                            onClick={async () => {
-                              try {
-                                await updateDoc(doc(db, 'groups', id!), {
-                                  pendingInvites: arrayRemove(identifier)
-                                });
-                                toast.success('Đã hủy lời mời');
-                              } catch (error) {
-                                handleFirestoreError(error, OperationType.WRITE, `groups/${id}`);
-                              }
-                            }}
-                            className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                            onClick={() => setIsTransactionModalOpen(true)}
+                            className="flex-1 min-w-[140px] bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-4 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:translate-y-[-2px] transition-all active:scale-95 shadow-xl shadow-slate-900/10 dark:shadow-white/10"
                           >
-                            <X size={16} />
+                            <Receipt size={18} /> Ghi giao dịch
+                          </button>
+                          <button 
+                            onClick={handleExportCSV}
+                            className="w-14 h-14 bg-slate-50 dark:bg-slate-800 text-slate-500 rounded-2xl flex items-center justify-center hover:bg-slate-100 transition-all active:scale-95 border border-slate-100 dark:border-slate-700"
+                          >
+                            <Download size={20} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Campaigns Overview */}
+                    <section className="space-y-4">
+                      <div className="flex justify-between items-center px-4">
+                        <h3 className="font-black text-lg uppercase italic tracking-tighter text-slate-900 dark:text-white">Chiến dịch & Mục tiêu</h3>
+                        {canManage && (
+                          <button onClick={() => setIsCampaignModalOpen(true)} className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border border-indigo-100 dark:border-indigo-800">
+                            Tạo mới
                           </button>
                         )}
                       </div>
-                    ))}
+                      <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 px-4 snap-x">
+                        {campaigns.length === 0 ? (
+                          <div className="w-full bg-slate-100 dark:bg-slate-900 border border-dashed border-slate-200 dark:border-slate-800 rounded-[32px] p-12 text-center text-slate-400 text-[10px] uppercase font-black tracking-widest leading-relaxed">Chưa có mục tiêu hành động</div>
+                        ) : (
+                          campaigns.map(camp => (
+                            <div key={camp.id} className="min-w-[300px] snap-center">
+                              <CampaignCard campaign={camp} group={group} isAdmin={canManage} />
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </section>
+
+                    {/* Transaction History */}
+                    <section className="bg-white dark:bg-slate-900 rounded-[40px] p-8 shadow-xl border border-slate-100 dark:border-slate-800 text-left">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                        <h3 className="font-black text-xl uppercase italic tracking-tighter text-slate-900 dark:text-white">Lịch sử thu chi</h3>
+                        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl gap-1">
+                          {(['all', 'income', 'expense'] as const).map(f => (
+                            <button key={f} onClick={() => setTxFilter(f)} className={cn("px-4 py-2 rounded-xl text-[9px] font-black uppercase transition-all", txFilter === f ? "bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-sm" : "text-slate-400")}>
+                              {f === 'all' ? 'Tất cả' : f === 'income' ? 'Thu' : 'Chi'}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="space-y-4">
+                        {transactions.length === 0 ? (
+                          <EmptyState icon={Receipt} title="Chưa có giao dịch" message="Mọi khoản thu chi sẽ lưu tại đây." className="py-12" />
+                        ) : (
+                          <div className="space-y-3">
+                            {transactions.map(tx => (
+                              <TransactionCard key={tx.id} transaction={tx} group={group} memberProfiles={memberProfiles} campaigns={campaigns} isAdmin={canManage} />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </section>
                   </div>
-                </div>
-              )}
-            </motion.div>
+                )}
+
+                {activeTab === 'polls' && (
+                  <div className="max-w-4xl mx-auto">
+                    <PollTab 
+                      groupId={id!} 
+                      canManage={canManage} 
+                      isMember={isMember || false} 
+                      memberProfiles={memberProfiles} 
+                      onAddPoll={() => setIsPollModalOpen(true)} 
+                    />
+                  </div>
+                )}
+
+                {activeTab === 'members' && (
+                  <div className="space-y-8 max-w-4xl mx-auto">
+                    {/* Requests Panel */}
+                    {canManage && requests.length > 0 && (
+                      <div className="bg-indigo-600 rounded-[40px] p-8 text-white shadow-2xl shadow-indigo-200 dark:shadow-none text-left">
+                        <h4 className="font-black text-lg uppercase italic tracking-tighter mb-6 flex items-center gap-3">
+                          <UserCheck size={24} /> Đang chờ duyệt ({requests.length})
+                        </h4>
+                        <div className="grid gap-3 text-left">
+                          {requests.map(req => (
+                            <div key={req.id} className="bg-white/10 backdrop-blur-md rounded-2xl p-4 flex items-center justify-between border border-white/10">
+                              <div className="flex items-center gap-4 text-left">
+                                <div className="w-10 h-10 bg-white/20 rounded-xl overflow-hidden flex items-center justify-center font-black">
+                                  {requestProfiles[req.uid]?.photoURL ? <img src={requestProfiles[req.uid].photoURL} alt="" /> : "?"}
+                                </div>
+                                <div>
+                                  <p className="font-black text-sm">{requestProfiles[req.uid]?.displayName || "User"}</p>
+                                  <p className="text-[9px] font-black uppercase tracking-widest opacity-60">Yêu cầu gia nhập</p>
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                <button onClick={() => handleRequestAction(req.id, 'approve', req.type, req.uid)} className="px-4 py-2 bg-white text-indigo-600 rounded-xl text-[9px] font-black uppercase tracking-widest">Duyệt</button>
+                                <button onClick={() => handleRequestAction(req.id, 'reject', req.type, req.uid)} className="px-4 py-2 bg-red-400 text-white rounded-xl text-[9px] font-black uppercase tracking-widest">Từ chối</button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Search and List */}
+                    <div className="space-y-4">
+                      <div className="relative group">
+                        <input type="text" value={memberSearchTerm} onChange={e => setMemberSearchTerm(e.target.value)} placeholder="Tìm theo tên hoặc SĐT..." className="w-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[32px] pl-14 pr-6 py-5 text-sm font-bold text-slate-900 dark:text-white shadow-xl focus:ring-4 focus:ring-indigo-500/5 transition-all outline-none" />
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors" size={20} />
+                      </div>
+                      <div className="bg-white dark:bg-slate-900 rounded-[40px] shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden text-left">
+                        {paginatedMembers.map((member, i) => (
+                          <button key={member.uid} onClick={() => setSelectedMember(member)} className={cn("w-full px-8 py-6 flex items-center gap-6 text-left transition-all hover:bg-slate-50 dark:hover:bg-slate-800/50", i !== paginatedMembers.length - 1 && "border-b border-slate-50 dark:border-slate-800")}>
+                            <div className="w-16 h-16 rounded-[24px] overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm">
+                              {member.photoURL ? <img src={member.photoURL} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-black text-slate-400">?</div>}
+                            </div>
+                            <div className="flex-1">
+                              <h5 className="font-black text-lg text-slate-900 dark:text-white uppercase tracking-tight leading-none mb-1">{member.displayName}</h5>
+                              <div className="flex items-center gap-2">
+                                {group.ownerId === member.uid && <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest">Owner</span>}
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{member.phoneNumber || 'No Phone'}</p>
+                              </div>
+                            </div>
+                            <ChevronRight size={20} className="text-slate-200" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
           )}
-        </AnimatePresence>
         </div>
-      </motion.div>
+      </main>
 
       {/* Action Fab for Finance */}
       {activeTab === 'finance' && (

@@ -47,7 +47,7 @@ export default function AnnouncementCard({
   const [commentText, setCommentText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const creator = memberProfiles.find(p => p.uid === announcement.createdBy);
+  const creator = (memberProfiles || []).find(p => p.uid === announcement.createdBy);
   const currentUser = auth.currentUser;
 
   const handleReaction = async (emoji: string) => {
@@ -55,7 +55,7 @@ export default function AnnouncementCard({
     setShowReactions(false);
 
     const currentReactions = announcement.reactions || {};
-    const userAlreadyReacted = Object.entries(currentReactions).find(([_, uids]) => (uids as string[]).includes(currentUser.uid));
+    const userAlreadyReacted = Object.entries(currentReactions).find(([_, uids]) => (uids as string[] || []).includes(currentUser.uid));
 
     try {
       const docRef = doc(db, 'groups', groupId, 'announcements', announcement.id);
@@ -97,7 +97,7 @@ export default function AnnouncementCard({
     const comment = { ...currentComments[commentIndex] };
     const reactions = { ...(comment.reactions || {}) };
     
-    const userAlreadyReacted = Object.entries(reactions).find(([_, uids]) => (uids as string[]).includes(currentUser.uid));
+    const userAlreadyReacted = Object.entries(reactions).find(([_, uids]) => (uids as string[] || []).includes(currentUser.uid));
 
     if (userAlreadyReacted) {
       const [oldEmoji, uids] = userAlreadyReacted;

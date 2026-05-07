@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { db, auth } from '../../lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { UserProfile, TaskStatus } from '../../models';
+import { UserProfile, TaskStatus, TaskPriority } from '../../models';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, CheckCircle, User, Calendar, Type, AlignLeft } from 'lucide-react';
+import { X, CheckCircle, User, Calendar, Type, AlignLeft, Flag } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { cn } from '../../core/utils';
 import { handleFirestoreError, OperationType } from '../../hooks/useAuth';
@@ -23,6 +23,7 @@ export default function TaskModal({ isOpen, onClose, groupId, groupName, members
   const [description, setDescription] = useState('');
   const [selectedAssigneeIds, setSelectedAssigneeIds] = useState<string[]>([]);
   const [dueDate, setDueDate] = useState('');
+  const [priority, setPriority] = useState<TaskPriority>('medium');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const toggleAssignee = (uid: string) => {
@@ -50,6 +51,7 @@ export default function TaskModal({ isOpen, onClose, groupId, groupName, members
         assigneeIds: selectedAssigneeIds,
         assigneeNames,
         status: 'pending' as TaskStatus,
+        priority,
         dueDate: dueDate ? new Date(dueDate) : null,
         createdBy: auth.currentUser.uid,
         createdAt: serverTimestamp(),
@@ -200,6 +202,41 @@ export default function TaskModal({ isOpen, onClose, groupId, groupName, members
                           {isSelected && (
                             <CheckCircle size={14} className="ml-auto text-blue-600 shrink-0" />
                           )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1 mb-2 block">Mức độ ưu tiên</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {(['low', 'medium', 'high', 'urgent'] as TaskPriority[]).map((p) => {
+                      const colors = {
+                        low: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                        medium: 'bg-blue-50 text-blue-600 border-blue-100',
+                        high: 'bg-orange-50 text-orange-600 border-orange-100',
+                        urgent: 'bg-red-50 text-red-600 border-red-100',
+                      };
+                      const activeColors = {
+                        low: 'bg-emerald-600 text-white border-emerald-600 shadow-emerald-200',
+                        medium: 'bg-blue-600 text-white border-blue-600 shadow-blue-200',
+                        high: 'bg-orange-600 text-white border-orange-600 shadow-orange-200',
+                        urgent: 'bg-red-600 text-white border-red-600 shadow-red-200',
+                      };
+                      const labels = { low: 'Thấp', medium: 'Vừa', high: 'Cao', urgent: 'Gấp' };
+                      return (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => setPriority(p)}
+                          className={cn(
+                            "flex flex-col items-center gap-1.5 py-3 rounded-2xl border-2 transition-all shadow-sm",
+                            priority === p ? activeColors[p] : colors[p] + " border-transparent opacity-60 hover:opacity-100"
+                          )}
+                        >
+                          <Flag size={14} className={priority === p ? "fill-white" : ""} />
+                          <span className="text-[9px] font-black uppercase tracking-tight">{labels[p]}</span>
                         </button>
                       );
                     })}

@@ -47,8 +47,8 @@ export const TransactionCard: React.FC<TransactionCardProps> = ({ transaction, g
   const [commentText, setCommentText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const creator = memberProfiles.find(p => p.uid === transaction.createdBy);
-  const campaign = campaigns.find(c => c.id === transaction.campaignId);
+  const creator = (memberProfiles || []).find(p => p.uid === transaction.createdBy);
+  const campaign = (campaigns || []).find(c => c.id === transaction.campaignId);
   const isPending = transaction.status === 'pending';
   
   const repository = useMemo(() => new TransactionRepository(group.id), [group.id]);
@@ -60,7 +60,7 @@ export const TransactionCard: React.FC<TransactionCardProps> = ({ transaction, g
     setShowReactions(false);
 
     const currentReactions = transaction.reactions || {};
-    const userAlreadyReacted = Object.entries(currentReactions).find(([_, uids]) => (uids as string[]).includes(currentUser.uid));
+    const userAlreadyReacted = Object.entries(currentReactions).find(([_, uids]) => (uids as string[] || []).includes(currentUser.uid));
 
     try {
       const newReactions = { ...currentReactions };
@@ -89,7 +89,7 @@ export const TransactionCard: React.FC<TransactionCardProps> = ({ transaction, g
 
     const comment = { ...currentComments[commentIndex] };
     const reactions = { ...(comment.reactions || {}) };
-    const userAlreadyReacted = Object.entries(reactions).find(([_, uids]) => (uids as string[]).includes(currentUser.uid));
+    const userAlreadyReacted = Object.entries(reactions).find(([_, uids]) => (uids as string[] || []).includes(currentUser.uid));
 
     if (userAlreadyReacted) {
       const [oldEmoji, uids] = userAlreadyReacted;
@@ -136,7 +136,7 @@ export const TransactionCard: React.FC<TransactionCardProps> = ({ transaction, g
     }
   };
 
-  const userReaction = currentUser ? Object.entries(transaction.reactions || {}).find(([_, uids]) => (uids as string[]).includes(currentUser.uid))?.[0] : null;
+  const userReaction = currentUser ? Object.entries(transaction.reactions || {}).find(([_, uids]) => (uids as string[] || []).includes(currentUser.uid))?.[0] : null;
   const totalReactions = (Object.values(transaction.reactions || {}) as string[][]).reduce((acc: number, curr: string[]) => acc + curr.length, 0);
 
   const handleApprove = async () => {

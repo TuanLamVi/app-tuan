@@ -227,9 +227,9 @@ export default function Home() {
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-10 md:space-y-16 animate-in fade-in slide-in-from-bottom-10 duration-1000">
+    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-10 md:space-y-16 animate-in fade-in slide-in-from-bottom-10 duration-1000 overflow-x-hidden">
       {/* Corporate Dashboard Hero Section */}
-      <section className="relative overflow-hidden bg-slate-900 dark:bg-black rounded-3xl md:rounded-[40px] p-8 md:p-14 text-white shadow-2xl shadow-slate-200 dark:shadow-none border border-slate-800">
+      <section className="relative overflow-hidden bg-slate-900 dark:bg-black rounded-3xl md:rounded-[40px] p-6 sm:p-10 md:p-14 text-white shadow-2xl shadow-slate-200 dark:shadow-none border border-slate-800">
         <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-indigo-500/10 via-transparent to-transparent pointer-none" />
         
         <div className="relative z-10 grid md:grid-cols-2 gap-12 items-center text-left">
@@ -240,7 +240,7 @@ export default function Home() {
             </div>
             
             <div className="space-y-4">
-              <h2 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight">
+              <h2 className="text-2xl md:text-4xl font-extrabold tracking-tight leading-tight">
                 Quản lý nhóm <br />
                 <span className="text-indigo-400">chuyên nghiệp.</span>
               </h2>
@@ -249,18 +249,18 @@ export default function Home() {
               </p>
             </div>
             
-            <div className="flex flex-wrap gap-4 pt-4">
+            <div className="flex flex-wrap gap-3 pt-4">
               <Link 
                 to="/create-group"
-                className="inline-flex items-center gap-3 bg-white text-slate-900 px-8 py-4 rounded-xl text-xs font-bold uppercase tracking-widest transition-all hover:bg-slate-100 hover:translate-y-[-2px] active:scale-95 shadow-xl shadow-white/10"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 sm:gap-3 bg-white text-slate-900 px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all hover:bg-slate-100 hover:translate-y-[-2px] active:scale-95 shadow-xl shadow-white/10"
               >
-                <Plus size={18} />
+                <Plus size={16} />
                 Tạo nhóm mới
               </Link>
               <button 
-                className="inline-flex items-center gap-3 bg-slate-800 text-white px-8 py-4 rounded-xl text-xs font-bold uppercase tracking-widest border border-slate-700 transition-all hover:bg-slate-700"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 sm:gap-3 bg-slate-800 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-widest border border-slate-700 transition-all hover:bg-slate-700"
               >
-                <LayoutGrid size={18} />
+                <LayoutGrid size={16} />
                 Khám phá
               </button>
             </div>
@@ -306,7 +306,7 @@ export default function Home() {
           >
             <div className="flex items-center gap-3 px-2">
               <div className="w-2 h-8 bg-amber-500 rounded-full" />
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Lời mời chờ xử lý</h3>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Lời mời chờ xử lý</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {invitations.map((inv) => {
@@ -315,33 +315,33 @@ export default function Home() {
                   <motion.div 
                     key={inv.id}
                     layout
-                    className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm hover:shadow-md transition-all relative overflow-hidden"
+                    className="p-5 sm:p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm hover:shadow-md transition-all relative overflow-hidden"
                   >
-                    <div className="flex items-center gap-4 mb-6">
-                      <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden shrink-0">
+                    <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden shrink-0">
                         {group?.coverImage ? (
                           <img src={group.coverImage} className="w-full h-full object-cover" alt="" />
                         ) : (
-                          <Users size={20} className="m-auto mt-3.5 text-slate-400" />
+                          <Users size={18} className="m-auto mt-2.5 sm:mt-3.5 text-slate-400" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-bold text-slate-900 dark:text-white truncate">{group?.name || 'Nhóm đang tải...'}</h4>
-                        <p className="text-[11px] text-slate-500 mt-0.5">Từ: {inv.inviterEmail || 'Thành viên'}</p>
+                        <h4 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white truncate">{group?.name || 'Nhóm đang tải...'}</h4>
+                        <p className="text-[10px] sm:text-[11px] text-slate-500 mt-0.5 truncate tracking-tight">Từ: {inv.inviterEmail || 'Thành viên'}</p>
                       </div>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 sm:gap-3">
                       <button 
                         onClick={() => handleInvitation(inv, 'accept')}
-                        className="flex-1 bg-indigo-600 text-white py-3 rounded-lg text-[11px] font-bold uppercase tracking-wider hover:bg-indigo-700 transition-colors"
+                        className="flex-1 bg-indigo-600 text-white py-2.5 sm:py-3 rounded-lg text-[10px] sm:text-[11px] font-bold uppercase tracking-wider hover:bg-indigo-700 transition-colors"
                       >
                         Chấp nhận
                       </button>
                       <button 
                         onClick={() => handleInvitation(inv, 'decline')}
-                        className="px-4 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-lg hover:bg-red-50 hover:text-red-500 transition-colors"
+                        className="px-3 sm:px-4 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-lg hover:bg-red-50 hover:text-red-500 transition-colors"
                       >
-                        <X size={18} />
+                        <X size={16} sm:size={18} />
                       </button>
                     </div>
                   </motion.div>
@@ -356,7 +356,7 @@ export default function Home() {
       <section className="space-y-8">
         <div className="flex justify-between items-end px-2">
           <div className="space-y-1">
-            <h3 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Danh sách nhóm</h3>
+            <h3 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Danh sách nhóm</h3>
             <p className="text-xs text-slate-500 font-medium tracking-wide uppercase">Bạn đang tham gia {orderedGroups.length} nhóm hoạt động</p>
           </div>
           <Link to="/groups" className="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 hover:underline">
@@ -379,43 +379,43 @@ export default function Home() {
                   <Link 
                     to={`/group/${group.id}`}
                     className={cn(
-                      "group block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 relative",
+                      "group block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm hover:shadow-xl transition-all duration-300 relative",
                       isPinned && "border-indigo-200 dark:border-indigo-900 bg-indigo-50/10"
                     )}
                   >
-                    <div className="flex items-center gap-5 relative z-10">
+                    <div className="flex items-center gap-3 sm:gap-5 relative z-10">
                       <div className="relative shrink-0">
-                        <div className="w-16 h-16 md:w-20 md:h-20 bg-slate-100 dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-inner group-hover:scale-105 transition-transform duration-500">
+                        <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-slate-100 dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-inner group-hover:scale-105 transition-transform duration-500">
                           {group.coverImage ? (
                             <img src={group.coverImage} alt={group.name} className="w-full h-full object-cover" />
                           ) : (
-                            <Users className="w-8 h-8 m-auto mt-4 md:mt-6 text-slate-300 dark:text-slate-600" />
+                            <Users className="w-7 h-7 sm:w-8 sm:h-8 m-auto mt-3 sm:mt-4 md:mt-6 text-slate-300 dark:text-slate-600" />
                           )}
                         </div>
                         {group.ownerId === auth.currentUser?.uid && (
-                          <div className="absolute -top-1 -right-1 bg-amber-400 w-6 h-6 rounded-lg flex items-center justify-center shadow-lg">
-                            <Crown size={12} className="text-amber-900" />
+                          <div className="absolute -top-1 -right-1 bg-amber-400 w-5 h-5 sm:w-6 sm:h-6 rounded-lg flex items-center justify-center shadow-lg">
+                            <Crown size={10} sm:size={12} className="text-amber-900" />
                           </div>
                         )}
                       </div>
                       
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
-                           <h4 className="font-bold text-slate-900 dark:text-white text-lg truncate group-hover:text-indigo-600 transition-colors">
+                      <div className="flex-1 min-w-0 pr-8 sm:pr-0">
+                        <div className="flex items-center gap-2 mb-1 sm:mb-2">
+                           <h4 className="font-bold text-slate-900 dark:text-white text-base sm:text-lg truncate group-hover:text-indigo-600 transition-colors">
                              {group.name}
                            </h4>
                            <GroupUnreadBadge groupId={group.id} lastReadAt={profile?.lastReadChat?.[group.id]} />
                         </div>
                         
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-1.5 text-slate-500">
-                            <Users size={14} />
-                            <span className="text-[11px] font-semibold">{group.members?.length || 0} thành viên</span>
+                        <div className="flex items-center gap-3 sm:gap-4">
+                          <div className="flex items-center gap-1 sm:gap-1.5 text-slate-500">
+                            <Users size={12} sm:size={14} />
+                            <span className="text-[10px] sm:text-[11px] font-semibold">{group.members?.length || 0} thành viên</span>
                           </div>
                           
-                          <div className="flex -space-x-2">
+                          <div className="flex -space-x-1.5 sm:-space-x-2">
                              {[1, 2, 3].map(i => (
-                               <div key={i} className="w-6 h-6 rounded-full border-2 border-white dark:border-slate-900 bg-slate-200 dark:bg-slate-700" />
+                               <div key={i} className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 border-white dark:border-slate-900 bg-slate-200 dark:bg-slate-700" />
                              ))}
                           </div>
                         </div>
@@ -433,14 +433,14 @@ export default function Home() {
                   <button
                     onClick={(e) => handlePinGroup(group.id, e)}
                     className={cn(
-                      "absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center rounded-lg transition-all active:scale-75",
+                      "absolute top-3 sm:top-4 right-3 sm:right-4 z-20 w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg transition-all active:scale-75",
                       isPinned 
                         ? "text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30" 
                         : "text-slate-300 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800"
                     )}
                   >
-                    <PinOff size={16} className={cn(!isPinned && "hidden")} />
-                    <Pin size={16} className={cn(isPinned && "hidden")} />
+                    <PinOff size={14} sm:size={16} className={cn(!isPinned && "hidden")} />
+                    <Pin size={14} sm:size={16} className={cn(isPinned && "hidden")} />
                   </button>
                 </div>
               );
