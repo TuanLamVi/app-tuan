@@ -275,7 +275,7 @@ export default function ChatTab({ groupId, canManage }: ChatTabProps) {
       <div 
         ref={scrollRef}
         onClick={() => activeActionId && setActiveActionId(null)}
-        className="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar scroll-smooth"
+        className="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar scroll-smooth touch-pan-y"
       >
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center opacity-40">

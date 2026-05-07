@@ -380,30 +380,34 @@ export default function GroupDetail() {
   };
 
   const onDragEnd = (_e: any, info: any) => {
-    const threshold = 50;
+    const threshold = 40; // Slightly lower threshold for easier swiping
+    const velocityThreshold = 200; // Allow swipe on fast flick even if distance is small
     const currentIndex = availableTabs.indexOf(activeTab);
     
-    if (info.offset.x < -threshold && currentIndex < availableTabs.length - 1) {
+    if ((info.offset.x < -threshold || info.velocity.x < -velocityThreshold) && currentIndex < availableTabs.length - 1) {
       handleTabChange(availableTabs[currentIndex + 1]);
-    } else if (info.offset.x > threshold && currentIndex > 0) {
+    } else if ((info.offset.x > threshold || info.velocity.x > velocityThreshold) && currentIndex > 0) {
       handleTabChange(availableTabs[currentIndex - 1]);
     }
   };
 
   const tabVariants = {
     enter: (dir: number) => ({
-      x: dir > 0 ? 100 : -100,
+      x: dir > 0 ? '100%' : '-100%',
       opacity: 0,
+      scale: 0.98
     }),
     center: {
       zIndex: 1,
       x: 0,
       opacity: 1,
+      scale: 1
     },
     exit: (dir: number) => ({
       zIndex: 0,
-      x: dir < 0 ? 100 : -100,
+      x: dir < 0 ? '100%' : '-100%',
       opacity: 0,
+      scale: 0.98
     }),
   };
 
@@ -663,13 +667,15 @@ export default function GroupDetail() {
         </div>
 
       <motion.div 
-        className="p-4"
+        className="flex-1 w-full relative overflow-hidden"
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.2}
+        dragElastic={0.7}
+        dragDirectionLock
         onDragEnd={onDragEnd}
       >
-        {!isMember && activeTab !== 'news' && activeTab !== 'members' && (
+        <div className="p-4 min-h-full">
+          {!isMember && activeTab !== 'news' && activeTab !== 'members' && (
           <div className="py-20 text-center space-y-4">
             <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto text-blue-600">
               <Shield size={32} />
@@ -1125,6 +1131,7 @@ export default function GroupDetail() {
             </motion.div>
           )}
         </AnimatePresence>
+        </div>
       </motion.div>
 
       {/* Action Fab for Finance */}

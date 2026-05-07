@@ -386,7 +386,22 @@ export default function Home() {
                   value={group}
                   onDragEnd={saveOrder}
                   className="relative touch-none"
+                  whileDrag={{ scale: 1.02, zIndex: 50 }}
                 >
+                  <div className="absolute top-6 right-6 z-20">
+                    <button
+                      onClick={(e) => handlePinGroup(group.id, e)}
+                      className={cn(
+                        "w-10 h-10 flex items-center justify-center transition-all active:scale-75",
+                        isPinned 
+                          ? "text-blue-600" 
+                          : "text-gray-400 hover:text-blue-600"
+                      )}
+                    >
+                      <Pin size={24} className={cn(isPinned && "fill-blue-600")} />
+                    </button>
+                  </div>
+                  
                   <Link 
                     to={`/group/${group.id}`}
                     className={cn(
@@ -394,8 +409,12 @@ export default function Home() {
                       isPinned && "ring-2 ring-blue-500 ring-offset-4 dark:ring-offset-black"
                     )}
                   >
-                    <div className="flex items-center gap-8 relative z-10">
-                      <div className="relative">
+                    <div className="flex items-center gap-6 relative z-10">
+                      <div className="flex flex-col items-center gap-1 text-gray-300 dark:text-gray-700">
+                         <GripVertical size={20} />
+                      </div>
+                      
+                      <div className="relative group/avatar">
                         <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-3xl flex-shrink-0 flex items-center justify-center overflow-hidden border-2 border-gray-900 dark:border-white shadow-xl group-hover:rotate-3 transition-transform duration-500">
                           {group.coverImage ? (
                             <img src={group.coverImage} alt={group.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
@@ -427,12 +446,7 @@ export default function Home() {
                             </span>
                           </div>
                           
-                          {isPinned && (
-                            <div className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/20">
-                              <Pin size={12} className="fill-white" />
-                              <span className="text-[11px] font-black uppercase tracking-widest">Pin</span>
-                            </div>
-                          )}
+                          {/* Pin badge removed as indicated by user */}
                           
                           <div className="flex items-center gap-2 ml-auto">
                              <div className="flex -space-x-1.5">
