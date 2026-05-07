@@ -341,7 +341,7 @@ export default function Home() {
                         onClick={() => handleInvitation(inv, 'decline')}
                         className="px-3 sm:px-4 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-lg hover:bg-red-50 hover:text-red-500 transition-colors"
                       >
-                        <X size={16} sm:size={18} />
+                        <X size={18} />
                       </button>
                     </div>
                   </motion.div>
@@ -394,7 +394,7 @@ export default function Home() {
                         </div>
                         {group.ownerId === auth.currentUser?.uid && (
                           <div className="absolute -top-1 -right-1 bg-amber-400 w-5 h-5 sm:w-6 sm:h-6 rounded-lg flex items-center justify-center shadow-lg">
-                            <Crown size={10} sm:size={12} className="text-amber-900" />
+                            <Crown size={12} className="text-amber-900" />
                           </div>
                         )}
                       </div>
@@ -409,7 +409,7 @@ export default function Home() {
                         
                         <div className="flex items-center gap-3 sm:gap-4">
                           <div className="flex items-center gap-1 sm:gap-1.5 text-slate-500">
-                            <Users size={12} sm:size={14} />
+                            <Users size={14} />
                             <span className="text-[10px] sm:text-[11px] font-semibold">{group.members?.length || 0} thành viên</span>
                           </div>
                           
@@ -439,8 +439,8 @@ export default function Home() {
                         : "text-slate-300 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800"
                     )}
                   >
-                    <PinOff size={14} sm:size={16} className={cn(!isPinned && "hidden")} />
-                    <Pin size={14} sm:size={16} className={cn(isPinned && "hidden")} />
+                    <PinOff size={16} className={cn(!isPinned && "hidden")} />
+                    <Pin size={16} className={cn(isPinned && "hidden")} />
                   </button>
                 </div>
               );
