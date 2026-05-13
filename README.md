@@ -1,44 +1,40 @@
-# MyGroup - Ứng dụng Quản lý Nhóm & Cộng đồng Toàn diện
+# MyGroups.AI 🚀
 
-MyGroup là nền tảng quản lý nhóm chuyên nghiệp, được thiết kế để giải quyết mọi nhu cầu vận hành của đội nhóm, clb, hay cộng đồng. Ứng dụng tập trung vào tính minh bạch trong tài chính, hiệu quả trong trao đổi và sự gắn kết giữa các thành viên qua các công cụ quản trị thông minh.
+**MyGroups.AI** là ứng dụng di động thông minh giúp quản lý nhóm, quỹ tài chính và công việc hiệu quả với sự hỗ trợ của Trí tuệ nhân tạo (AI). Dự án được xây dựng bằng Flutter và Firebase, tích hợp mô hình ngôn ngữ lớn để tối ưu hóa trải nghiệm người dùng.
 
-## ✨ Các Tính năng Chủ chốt
+## ✨ Tính năng nổi bật
 
-- **🏠 Trung tâm Nhóm (Group Dashboard):** Theo dõi mọi biến động của nhóm trong một màn hình duy nhất với cấu trúc tab linh hoạt.
-- **💬 Trao đổi Real-time (Smart Chat):** Trải nghiệm nhắn tin hiện đại phong cách Zalo/Messenger, hỗ trợ cảm xúc (reactions), thu hồi tin nhắn và phân nhóm thời gian thông minh.
-- **📢 Bản tin (Announcements):** Hệ thống thông báo quan trọng giúp truyền tải thông tin đến toàn bộ thành viên nhanh chóng và chuyên nghiệp.
-- **💰 Quản lý Tài chính (Finance Hub):** 
-  - Theo dõi số dư quỹ nhóm thời gian thực.
-  - Quản lý thu chi minh bạch với hệ thống duyệt giao dịch từ ban quản trị.
-  - Lịch sử giao dịch chi tiết, hỗ trợ các loại tiền tệ khác nhau.
-- **📋 Quản lý Nhiệm vụ (Task Management):** Phân công công việc, theo dõi tiến độ và thời hạn (deadlines) của từng thành viên trong nhóm.
-- **🗳️ Bình chọn (Polls):** Tạo các cuộc trưng cầu ý kiến minh bạch, giúp nhóm đưa ra quyết định dựa trên số đông một cách công bằng.
-- **👥 Quản trị Thành viên:** 
-  - Mời thành viên mới bằng Email/SĐT với tính năng xem trước thông tin profile để tránh nhầm lẫn.
-  - Phân quyền chặt chẽ: Chủ nhóm (Owner) và Thành viên.
-- **⚙️ Tùy biến Nâng cao:** 
-  - Cho phép Chủ nhóm quyết định các tính năng hiển thị cho nhóm.
-  - Thiết lập Tab mặc định khi vào nhóm để tối ưu hóa quy trình làm việc.
+### 1. Quản lý Tài chính Nhóm 💰
+- Theo dõi thu chi minh bạch.
+- Hệ thống **Handshake Tài chính**: Admin tạo giao dịch, thành viên liên quan phải xác nhận để số dư được cập nhật.
+- Tự động xuất biên lai (Receipt) và chia sẻ qua mạng xã hội.
 
-## 🛠 Công nghệ & Kiến trúc
+### 2. Quản lý Công việc thông minh (AI Tasks) 🤖
+- **Trích xuất công việc từ hội thoại**: AI tự động đọc tin nhắn chat và đề xuất danh sách đầu việc cần thực hiện.
+- **Lập kế hoạch bằng AI**: Chỉ cần nhập ý tưởng (VD: "Lên kế hoạch đi du lịch Đà Lạt"), AI sẽ tự động phân rã thành các task chi tiết.
+- Ủy quyền và chuyển giao công việc linh hoạt giữa các thành viên.
 
-- **Frontend:** React 18, Vite, TypeScript.
-- **Giao diện:** 
-  - Tailwind CSS cho thiết kế Responsive & Modern UI.
-  - Framer Motion (`motion/react`) cho các chuyển động mượt mà.
-  - Lucide React cho hệ thống icon đồng nhất.
-- **Backend-as-a-Service:**
-  - **Firebase Authentication:** Bảo mật đăng nhập qua Google & Email.
-  - **Cloud Firestore:** Cơ sở dữ liệu NoSQL Real-time với bảo mật Rules đa tầng.
-- **Trải nghiệm Người dùng:**
-  - Hỗ trợ Chế độ tối (Dark Mode).
-  - Web App (PWA) tối ưu hoàn hảo cho các thiết bị di động.
+### 3. Thảo luận & Biểu quyết (Chat & Poll) 💬
+- Phòng chat nhóm thời gian thực.
+- Tạo biểu quyết (Poll) để lấy ý kiến tập thể nhanh chóng.
+- Phân tích nội dung chat trong 24h qua bằng AI để tóm tắt tiến độ nhóm.
 
-## 🚀 Bắt đầu Sử dụng
+### 4. Hệ thống Mời thành viên chuyên nghiệp 👥
+- Mời bằng Email hoặc Số điện thoại.
+- Tự động nhận diện người dùng đã có tài khoản hay chưa.
+- Hỗ trợ mời qua SMS/Email nếu người dùng chưa cài app.
 
-1. **Truy cập:** Mở liên kết ứng dụng trên trình duyệt.
-2. **Đăng nhập:** Sử dụng tài khoản Google để tham gia hoặc tạo nhóm mới.
-3. **Quản trị:** Nếu là Chủ nhóm, đừng quên vào mục Cài đặt để thiết lập Tab mặc định và bật/tắt các tính năng cần thiết cho nhóm của mình.
+## 🛠 Công nghệ sử dụng
+- **Flutter**: Framework phát triển ứng dụng đa nền tảng.
+- **Firebase**:
+  - **Firestore**: Cơ sở dữ liệu thời gian thực.
+  - **Auth**: Xác thực người dùng (Google, Số điện thoại).
+  - **Messaging (FCM)**: Thông báo đẩy.
+  - **Storage**: Lưu trữ hình ảnh, hóa đơn.
+- **Google Generative AI (Gemini)**: Xử lý ngôn ngữ tự nhiên, trích xuất task và tóm tắt hội thoại.
+
+## 📝 Giấy phép
+Dự án được phát triển cho mục đích quản lý nhóm hiệu quả. Vui lòng liên hệ tác giả để biết thêm chi tiết.
 
 ---
-*Dự án được phát triển và tối ưu hóa bởi Google AI Studio Build.*
+*Phát triển bởi MyGroups Team.*
